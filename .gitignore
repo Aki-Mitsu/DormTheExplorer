@@ -50,3 +50,7 @@ app.*.map.json
 
 # AI agent skills
 /.agents/skills/
+
+/UI-DORM-THE-EXPLORER/
+
+
