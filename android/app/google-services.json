@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "515273837439",
+    "project_id": "dorm-the-explorer",
+    "storage_bucket": "dorm-the-explorer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:515273837439:android:108184221cb4b217cea84a",
+        "android_client_info": {
+          "package_name": "dormtheexplorer.app.dorm_the_explorer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-WAn6T_f3duIOUbHrMpCCJ4n7v0NarSI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
