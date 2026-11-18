@@ -11,7 +11,7 @@ import 'package:dorm_the_explorer/main.dart';
 void main() {
   testWidgets('DormApp smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const DormApp());
+    await tester.pumpWidget(const DormExplorerApp());
 
     // Verify that the Browse page header is displayed.
     expect(find.text('Find your dorm'), findsOneWidget);
