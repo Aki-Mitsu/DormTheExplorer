@@ -30,6 +30,7 @@ class DormDashboardViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   Object? get error => _error;
   bool get showFavoritesOnly => _showFavoritesOnly;
+  String get searchQuery => _searchQuery;
   bool isFavorite(String dormitoryId) => _favoriteIds.contains(dormitoryId);
 
   List<Dormitory> get visibleDormitories {

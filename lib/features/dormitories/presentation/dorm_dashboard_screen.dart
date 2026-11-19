@@ -5,6 +5,7 @@ import '../data/dormitory_repository.dart';
 import '../domain/dormitory.dart';
 import 'dorm_dashboard_view_model.dart';
 import 'dorm_details_screen.dart';
+import 'search_filters_screen.dart';
 
 class DormDashboardScreen extends StatefulWidget {
   const DormDashboardScreen({
@@ -71,6 +72,17 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       ..showSnackBar(
         const SnackBar(content: Text('The Add Dormitory form is coming soon.')),
       );
+  }
+
+  void _openSearchFilters() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SearchFiltersScreen(
+          repository: _viewModel.repository,
+          initialQuery: _viewModel.searchQuery,
+        ),
+      ),
+    );
   }
 
   void _showProfilePlaceholder() {
@@ -205,7 +217,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
             SizedBox(
               height: 48,
               child: FilledButton.icon(
-                onPressed: _showComingSoon,
+                onPressed: _openSearchFilters,
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(94, 48),
                   backgroundColor: AppTheme.primaryContainer,
