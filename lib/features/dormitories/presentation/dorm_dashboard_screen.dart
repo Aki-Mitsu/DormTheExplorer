@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../theme/app_theme.dart';
 import '../data/dormitory_repository.dart';
 import '../domain/dormitory.dart';
+import '../domain/dormitory_search_filters.dart';
 import 'dorm_dashboard_view_model.dart';
 import 'dorm_details_screen.dart';
 import 'search_filters_screen.dart';
@@ -24,12 +25,14 @@ class DormDashboardScreen extends StatefulWidget {
 class _DormDashboardScreenState extends State<DormDashboardScreen> {
   late final DormDashboardViewModel _viewModel;
   int _selectedDestination = 0;
+  late final TextEditingController _searchController;
 
   bool get _isLandlord => widget.accountRole == 'landlord';
 
   @override
   void initState() {
     super.initState();
+    _searchController = TextEditingController();
     _viewModel = DormDashboardViewModel(
       repository: DormitoryRepository(),
       accountRole: widget.accountRole,
@@ -46,6 +49,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
     _viewModel
       ..removeListener(_handleViewModelChanged)
       ..dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -74,15 +78,22 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       );
   }
 
-  void _openSearchFilters() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
+  Future<void> _openSearchFilters() async {
+    final filters = await Navigator.of(context).push<DormitorySearchFilters>(
+      MaterialPageRoute<DormitorySearchFilters>(
         builder: (_) => SearchFiltersScreen(
-          repository: _viewModel.repository,
+          initialFilters: _viewModel.searchFilters,
           initialQuery: _viewModel.searchQuery,
         ),
       ),
     );
+    if (!mounted || filters == null) return;
+
+    _searchController.value = TextEditingValue(
+      text: filters.query,
+      selection: TextSelection.collapsed(offset: filters.query.length),
+    );
+    _viewModel.applySearchFilters(filters);
   }
 
   void _showProfilePlaceholder() {
@@ -185,6 +196,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
               child: SizedBox(
                 height: 48,
                 child: TextField(
+                  controller: _searchController,
                   onChanged: _viewModel.updateSearch,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(

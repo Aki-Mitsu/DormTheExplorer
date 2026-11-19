@@ -1,291 +1,698 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:material_ui/material_ui.dart';
+
 import '../../../theme/app_theme.dart';
-import '../data/dormitory_repository.dart';
-import '../domain/dormitory.dart';
-import '../domain/route_destination.dart';
-import 'dorm_details_screen.dart';
+import '../domain/dormitory_search_filters.dart';
 import 'search_filters_view_model.dart';
 
 class SearchFiltersScreen extends StatefulWidget {
-  const SearchFiltersScreen({super.key, required this.repository, this.initialQuery = ''});
-  final DormitoryRepository repository;
+  const SearchFiltersScreen({
+    super.key,
+    this.initialFilters,
+    this.initialQuery = '',
+  });
+
+  final DormitorySearchFilters? initialFilters;
   final String initialQuery;
+
   @override
   State<SearchFiltersScreen> createState() => _SearchFiltersScreenState();
 }
 
 class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
-  late final SearchFiltersViewModel vm;
-  late final TextEditingController queryController;
+  late final SearchFiltersViewModel _viewModel;
+  late final TextEditingController _searchController;
   final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
-    queryController = TextEditingController(text: widget.initialQuery);
-    vm = SearchFiltersViewModel(repository: widget.repository, initialQuery: widget.initialQuery)
-      ..addListener(_changed);
+    _viewModel = SearchFiltersViewModel(
+      initialFilters: widget.initialFilters,
+      initialQuery: widget.initialQuery,
+    );
+    _searchController = TextEditingController(text: _viewModel.query);
   }
-  void _changed() { if (mounted) setState(() {}); }
+
   @override
   void dispose() {
-    vm..removeListener(_changed)..dispose();
-    queryController.dispose();
+    _viewModel.dispose();
+    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
-  void _clear() { queryController.clear(); vm.clear(); }
+
+  void _clearAll() {
+    _searchController.clear();
+    _viewModel.clearAll();
+  }
+
+  void _applyFilters() {
+    FocusScope.of(context).unfocus();
+    Navigator.of(context).pop(_viewModel.filters);
+  }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppTheme.surface,
-    body: SafeArea(child: Column(children: [
-      _header(),
-      Expanded(child: LayoutBuilder(builder: (context, constraints) {
-        final width = constraints.maxWidth > 1000 ? 920.0 : constraints.maxWidth - 32;
-        return Align(alignment: Alignment.topCenter, child: SizedBox(width: width,
-          child: SingleChildScrollView(controller: _scrollController, padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text('Find your next dorm', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 3),
-              Text('Browse student accommodations across Batangas City', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-              const SizedBox(height: 18),
-              _search(),
-              const SizedBox(height: 22),
-              _choiceSection<PriceBand>('Price Range', null, const [
-                ('₱1,000–₱3,000', PriceBand.budget), ('₱3,000–₱5,000', PriceBand.midRange), ('₱5,000+', PriceBand.premium)
-              ], vm.price, vm.setPrice),
-              const SizedBox(height: 20),
-              _choiceSection<SlotBand>('Available Slots', 'Full listings remain visible unless filtered', const [
-                ('1–2', SlotBand.oneToTwo), ('3–4', SlotBand.threeToFour), ('5+', SlotBand.fiveOrMore)
-              ], vm.slots, vm.setSlots),
-              const SizedBox(height: 20),
-              _amenities(),
-              const SizedBox(height: 20),
-              _dropdownSection<int?>('Campus Proximity', 'Optional', vm.campusIndex,
-                [const DropdownMenuItem<int?>(value: null, child: Text('Any location')),
-                 for (var i = 0; i < RouteDestination.campuses.length; i++)
-                   DropdownMenuItem<int?>(value: i, child: Text(switch(i) { 0 => 'Near Alangilan Campus', 1 => 'Near Pablo Borbon Campus', _ => 'Near LPU' }))],
-                vm.setCampus),
-              const SizedBox(height: 20),
-              _dropdownSection<double>('Minimum Rating', 'Based on student reviews', vm.rating, const [
-                DropdownMenuItem(value: 0, child: Text('Any rating')),
-                DropdownMenuItem(value: 4, child: Text('4 stars & up')),
-                DropdownMenuItem(value: 4.5, child: Text('4.5 stars & up')),
-              ], (v) { if (v != null) vm.setRating(v); }),
-              const SizedBox(height: 24),
-              _resultsHeader(),
-              const SizedBox(height: 12),
-              _results(constraints.maxWidth),
-            ]),
-          ),
-        ));
-      })),
-    ])),
-    bottomNavigationBar: SafeArea(top: false, child: Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-      decoration: const BoxDecoration(color: AppTheme.surfaceContainerLowest,
-        border: Border(top: BorderSide(color: AppTheme.surfaceContainer))),
-      child: Row(children: [
-        Expanded(child: OutlinedButton(onPressed: _clear, child: const Text('Clear All'))),
-        const SizedBox(width: 10),
-        Expanded(flex: 2, child: FilledButton.icon(
-          onPressed: () {
-            FocusScope.of(context).unfocus();
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          },
-          iconAlignment: IconAlignment.end, icon: const Icon(Icons.arrow_forward_rounded),
-          label: Text('View ${vm.results.length} results'))),
-      ]),
-    )),
-  );
-
-  Widget _header() => Container(
-    padding: const EdgeInsets.fromLTRB(8, 6, 12, 6),
-    color: AppTheme.surfaceContainerLowest,
-    child: Row(children: [
-      IconButton(tooltip: 'Back to dorm listings', onPressed: () => Navigator.maybePop(context), icon: const Icon(Icons.arrow_back_rounded)),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('DormTheExplorer', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-        Text('Search & Filters', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-      ])),
-      TextButton(onPressed: _clear, child: const Text('Reset')),
-    ]),
-  );
-
-  Widget _search() => SizedBox(height: 50, child: TextField(
-    controller: queryController, onChanged: vm.updateQuery, textInputAction: TextInputAction.search,
-    decoration: InputDecoration(
-      hintText: 'Search by dorm name, location, or keyword',
-      hintStyle: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.outline),
-      prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.outline),
-      suffixIcon: vm.query.isEmpty ? null : IconButton(onPressed: () {
-        queryController.clear(); vm.updateQuery('');
-      }, icon: const Icon(Icons.close_rounded)),
-      filled: true, fillColor: AppTheme.surfaceContainerLowest,
-      contentPadding: const EdgeInsets.symmetric(vertical: 12),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.surfaceContainer)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.surfaceContainer)),
-    ),
-  ));
-
-  Widget _choiceSection<T>(String title, String? note, List<(String,T)> choices,
-      T? selected, ValueChanged<T?> changed) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    _sectionTitle(title, note), const SizedBox(height: 10),
-    Row(children: [for (var i = 0; i < choices.length; i++) ...[
-      if (i > 0) const SizedBox(width: 8),
-      Expanded(child: OutlinedButton(
-        onPressed: () => changed(selected == choices[i].$2 ? null : choices[i].$2),
-        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46),
-          padding: const EdgeInsets.symmetric(horizontal: 5),
-          foregroundColor: selected == choices[i].$2 ? AppTheme.onPrimary : AppTheme.onSurface,
-          backgroundColor: selected == choices[i].$2 ? AppTheme.primary : AppTheme.surfaceContainerLowest,
-          side: BorderSide(color: selected == choices[i].$2 ? AppTheme.primary : AppTheme.surfaceContainer),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-        child: FittedBox(child: Text(choices[i].$1)),
-      )),
-    ]]),
-  ]);
-
-  Widget _amenities() {
-    const items = <(String,String,IconData)>[
-      ('wifi','WiFi',Icons.wifi_rounded), ('own_cr','Own CR',Icons.shower_outlined),
-      ('kitchen','Kitchen',Icons.countertops_outlined), ('parking','Parking',Icons.local_parking_outlined),
-      ('aircon','Aircon',Icons.ac_unit_rounded), ('laundry','Laundry',Icons.local_laundry_service_outlined),
-    ];
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _sectionTitle('Amenities', 'Select all that apply'), const SizedBox(height: 10),
-      LayoutBuilder(builder: (context, box) {
-        final columns = box.maxWidth >= 540 ? 3 : 2;
-        final itemWidth = (box.maxWidth - (columns - 1) * 8) / columns;
-        return Wrap(spacing: 8, runSpacing: 8, children: items.map((item) {
-          final selected = vm.amenities.contains(item.$1);
-          return SizedBox(width: itemWidth, child: Material(
-            color: selected ? AppTheme.accentBackground : AppTheme.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(onTap: () => vm.toggleAmenity(item.$1), borderRadius: BorderRadius.circular(12),
-              child: Container(height: 48, padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: selected ? AppTheme.primaryFixedDim : AppTheme.surfaceContainer)),
-                child: Row(children: [
-                  Icon(item.$3, size: 18, color: AppTheme.primaryDeep), const SizedBox(width: 7),
-                  Expanded(child: Text(item.$2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall)),
-                  Icon(selected ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-                    size: 18, color: selected ? AppTheme.primary : AppTheme.outline),
-                ]),
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: _viewModel,
+    builder: (context, _) => Scaffold(
+      extendBody: true,
+      backgroundColor: AppTheme.surface,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            _header(),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final maxWidth = constraints.maxWidth > 760
+                      ? 760.0
+                      : constraints.maxWidth;
+                  return Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: maxWidth,
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 1, 16, 112),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _searchField(),
+                            _priceFilter(),
+                            _slotFilter(),
+                            _amenitiesFilter(),
+                            _campusFilter(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          ));
-        }).toList());
-      }),
-    ]);
-  }
-
-  Widget _dropdownSection<T>(String title, String note, T value, List<DropdownMenuItem<T>> items,
-      ValueChanged<T?> changed) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    _sectionTitle(title, note), const SizedBox(height: 10),
-    DropdownButtonFormField<T>(initialValue: value, isExpanded: true, items: items, onChanged: changed,
-      decoration: InputDecoration(filled: true, fillColor: AppTheme.surfaceContainerLowest,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppTheme.surfaceContainer))),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _bottomActions(),
     ),
-  ]);
+  );
 
-  Widget _sectionTitle(String title, String? note) => Row(children: [
-    Expanded(child: Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700))),
-    if (note != null) Text(note, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-  ]);
+  Widget _header() => ClipRect(
+    child: BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+      child: Container(
+        height: 64,
+        decoration: BoxDecoration(
+          color: AppTheme.surface.withValues(alpha: 0.85),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 8,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            IconButton(
+              tooltip: 'Go back',
+              onPressed: () => Navigator.of(context).maybePop(),
+              style: IconButton.styleFrom(
+                minimumSize: const Size(44, 44),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                foregroundColor: AppTheme.onSurface,
+              ),
+              icon: const Icon(Icons.arrow_back_rounded, size: 24),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'DormTheExplorer',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppTheme.primaryDeep,
+                      fontSize: 10,
+                      height: 14 / 10,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  Text(
+                    'Search & Filters',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: AppTheme.onSurface,
+                      fontSize: 18,
+                      height: 24 / 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: _clearAll,
+              style: TextButton.styleFrom(
+                minimumSize: const Size(44, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                foregroundColor: AppTheme.primaryDeep,
+                shape: const StadiumBorder(),
+                textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontSize: 14,
+                  height: 20 / 14,
+                ),
+              ),
+              child: const Text('Reset'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 
-  Widget _resultsHeader() => Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Dormitories in Batangas City', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-      const SizedBox(height: 2),
-      Text('Showing ${vm.results.length}${vm.results.length == 1 ? ' verified dorm available for rent' : ' verified dorms available for rent'}',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-    ])),
-    DropdownButtonHideUnderline(child: DropdownButton<DormSort>(value: vm.sort, isDense: true,
-      items: const [
-        DropdownMenuItem(value: DormSort.recommended, child: Text('Recommended')),
-        DropdownMenuItem(value: DormSort.priceLow, child: Text('Price: Low to high')),
-        DropdownMenuItem(value: DormSort.priceHigh, child: Text('Price: High to low')),
-        DropdownMenuItem(value: DormSort.rating, child: Text('Top rated')),
-      ], onChanged: (v) { if (v != null) vm.setSort(v); })),
-  ]);
+  Widget _searchField() => Padding(
+    padding: const EdgeInsets.only(top: 4, bottom: 8),
+    child: Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x10000000),
+            blurRadius: 4,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.search_rounded,
+            color: AppTheme.primaryDeep,
+            size: 22,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: _viewModel.updateQuery,
+              textInputAction: TextInputAction.search,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppTheme.onSurface,
+                fontSize: 14,
+                height: 20 / 14,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search by name or address...',
+                hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.outline,
+                  fontSize: 14,
+                  height: 20 / 14,
+                ),
+                isDense: true,
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
-  Widget _results(double width) {
-    if (vm.loading) {
-      return const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()));
-    }
-    if (vm.error != null) {
-      return _message(Icons.cloud_off_outlined, 'Could not load dormitories',
-          'Check your connection and Firestore access, then try again.', 'Try again', vm.retry);
-    }
-    final items = vm.results;
-    if (items.isEmpty) {
-      return _message(Icons.search_off_rounded, 'No dorms found',
-          'Try changing your search or clearing one or more filters.');
-    }
-    return GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-      itemCount: items.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: width >= 760 ? 3 : 2, mainAxisExtent: 236, crossAxisSpacing: 12, mainAxisSpacing: 12),
-      itemBuilder: (context, index) => _DormCard(dorm: items[index], onTap: () =>
-        Navigator.push(context, MaterialPageRoute<void>(builder: (_) => DormDetailsScreen(
-          dormitory: items[index], canEditLocation: false, canReview: true)))),
-    );
-  }
+  Widget _priceFilter() => _FilterGroup(
+    title: 'Price Range',
+    child: Row(
+      children: [
+        Expanded(
+          child: _RangeButton<DormPriceRange>(
+            label: '₱1,000–₱3,000',
+            selected: _viewModel.priceRange == DormPriceRange.budget,
+            onTap: () => _viewModel.selectPriceRange(
+              _viewModel.priceRange == DormPriceRange.budget
+                  ? null
+                  : DormPriceRange.budget,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _RangeButton<DormPriceRange>(
+            label: '₱3,000–₱5,000',
+            selected: _viewModel.priceRange == DormPriceRange.midRange,
+            onTap: () => _viewModel.selectPriceRange(
+              _viewModel.priceRange == DormPriceRange.midRange
+                  ? null
+                  : DormPriceRange.midRange,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _RangeButton<DormPriceRange>(
+            label: '₱5,000+',
+            selected: _viewModel.priceRange == DormPriceRange.premium,
+            onTap: () => _viewModel.selectPriceRange(
+              _viewModel.priceRange == DormPriceRange.premium
+                  ? null
+                  : DormPriceRange.premium,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 
-  Widget _message(IconData icon, String title, String subtitle, [String? action, VoidCallback? onPressed]) =>
-    Padding(padding: const EdgeInsets.symmetric(vertical: 34), child: Center(child: Column(children: [
-      Icon(icon, size: 38, color: AppTheme.outline), const SizedBox(height: 10),
-      Text(title, style: Theme.of(context).textTheme.titleMedium), const SizedBox(height: 4),
-      Text(subtitle, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-      if (action != null) TextButton(onPressed: onPressed, child: Text(action)),
-    ])));
+  Widget _slotFilter() => _FilterGroup(
+    title: 'Available Slots',
+    child: Row(
+      children: [
+        Expanded(
+          child: _RangeButton<DormSlotRange>(
+            label: '1–2',
+            selected: _viewModel.slotRange == DormSlotRange.oneToTwo,
+            onTap: () => _viewModel.selectSlotRange(
+              _viewModel.slotRange == DormSlotRange.oneToTwo
+                  ? null
+                  : DormSlotRange.oneToTwo,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _RangeButton<DormSlotRange>(
+            label: '3–4',
+            selected: _viewModel.slotRange == DormSlotRange.threeToFour,
+            onTap: () => _viewModel.selectSlotRange(
+              _viewModel.slotRange == DormSlotRange.threeToFour
+                  ? null
+                  : DormSlotRange.threeToFour,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _RangeButton<DormSlotRange>(
+            label: '5+',
+            selected: _viewModel.slotRange == DormSlotRange.fiveOrMore,
+            onTap: () => _viewModel.selectSlotRange(
+              _viewModel.slotRange == DormSlotRange.fiveOrMore
+                  ? null
+                  : DormSlotRange.fiveOrMore,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _amenitiesFilter() => _FilterGroup(
+    title: 'Amenities',
+    trailing: Text(
+      'Select all that apply',
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        color: AppTheme.onSurfaceVariant,
+        fontSize: 12,
+        height: 16 / 12,
+      ),
+    ),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        const columns = 2;
+        final width = (constraints.maxWidth - 8) / columns;
+        const amenities = <(String, String, IconData)>[
+          ('wifi', 'WiFi', Icons.wifi_rounded),
+          ('own_cr', 'Own CR', Icons.shower_outlined),
+          ('kitchen', 'Kitchen', Icons.countertops_outlined),
+          ('parking', 'Parking', Icons.local_parking_outlined),
+          ('aircon', 'Air Conditioning', Icons.ac_unit_rounded),
+          ('laundry', 'Laundry', Icons.local_laundry_service_outlined),
+        ];
+
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: amenities.map((amenity) {
+            final (value, label, icon) = amenity;
+            return SizedBox(
+              width: width,
+              child: _AmenityButton(
+                label: label,
+                icon: icon,
+                selected: _viewModel.amenities.contains(value),
+                onTap: () => _viewModel.toggleAmenity(value),
+              ),
+            );
+          }).toList(growable: false),
+        );
+      },
+    ),
+  );
+
+  Widget _campusFilter() => _FilterGroup(
+    title: 'Campus Proximity',
+    trailing: Text(
+      'Optional',
+      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        color: AppTheme.onSurfaceVariant,
+        fontSize: 10,
+        height: 14 / 10,
+        letterSpacing: 0.4,
+      ),
+    ),
+    child: Column(
+      children: [
+        _CampusButton(
+          label: 'Near Alangilan Campus',
+          selected: _viewModel.campus == DormCampus.alangilan,
+          onTap: () => _viewModel.toggleCampus(DormCampus.alangilan),
+        ),
+        const SizedBox(height: 8),
+        _CampusButton(
+          label: 'Near Pablo Borbon Campus',
+          selected: _viewModel.campus == DormCampus.pabloBorbon,
+          onTap: () => _viewModel.toggleCampus(DormCampus.pabloBorbon),
+        ),
+        const SizedBox(height: 8),
+        _CampusButton(
+          label: 'Near LPU',
+          selected: _viewModel.campus == DormCampus.lpu,
+          onTap: () => _viewModel.toggleCampus(DormCampus.lpu),
+        ),
+      ],
+    ),
+  );
+
+  Widget _bottomActions() => SafeArea(
+    top: false,
+    child: ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surface.withValues(alpha: 0.95),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0F000000),
+                blurRadius: 20,
+                offset: Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: _BottomButton(
+                  label: 'Clear All',
+                  background: AppTheme.surfaceContainer,
+                  foreground: AppTheme.onSurface,
+                  onTap: _clearAll,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: _BottomButton(
+                  label: 'Apply Filters',
+                  background: AppTheme.primaryDeep,
+                  foreground: AppTheme.onPrimary,
+                  icon: Icons.arrow_forward_rounded,
+                  onTap: _applyFilters,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
-class _DormCard extends StatelessWidget {
-  const _DormCard({required this.dorm, required this.onTap});
-  final Dormitory dorm;
-  final VoidCallback onTap;
+class _FilterGroup extends StatelessWidget {
+  const _FilterGroup({
+    required this.title,
+    required this.child,
+    this.trailing,
+  });
+
+  final String title;
+  final Widget child;
+  final Widget? trailing;
+
   @override
-  Widget build(BuildContext context) {
-    final photo = dorm.photoUrls.isNotEmpty && dorm.photoUrls.first.isNotEmpty;
-    return Material(color: AppTheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(16),
-      clipBehavior: Clip.antiAlias, child: InkWell(onTap: onTap, child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          SizedBox(height: 118, child: Stack(fit: StackFit.expand, children: [
-            if (photo) Image.network(dorm.photoUrls.first, fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _placeholder())
-            else _placeholder(),
-            if (dorm.availableSlots == 0) Positioned(top: 8, left: 8,
-              child: Container(padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(20)),
-                child: const Text('FULL', style: TextStyle(color: AppTheme.onPrimary, fontSize: 10, fontWeight: FontWeight.w700)))),
-          ])),
-          Expanded(child: Padding(padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(dorm.name.isEmpty ? 'Dorm name coming soon' : dorm.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 3),
-              Text(dorm.address, maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSurfaceVariant)),
-              const Spacer(),
-              Row(children: [
-                Expanded(child: Text('₱${dorm.monthlyPrice.toStringAsFixed(0)}/mo', maxLines: 1,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w700))),
-                const Icon(Icons.star_rounded, size: 15, color: AppTheme.tertiaryAccent),
-                Text(dorm.averageRating?.toStringAsFixed(1) ?? 'New', style: Theme.of(context).textTheme.labelSmall),
-              ]),
-            ]),
-          )),
-        ],
-      )));
-  }
-  Widget _placeholder() => const ColoredBox(color: AppTheme.surfaceContainerHigh,
-    child: Center(child: Icon(Icons.apartment_rounded, size: 36, color: AppTheme.outline)));
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppTheme.onSurface,
+                    fontSize: 14,
+                    height: 20 / 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              ?trailing,
+            ],
+          ),
+        ),
+        child,
+      ],
+    ),
+  );
+}
+
+class _RangeButton<T> extends StatelessWidget {
+  const _RangeButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: selected ? AppTheme.primaryDeep : AppTheme.surfaceContainer,
+    borderRadius: BorderRadius.circular(12),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        height: 36,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: selected ? AppTheme.onPrimary : AppTheme.onSurface,
+                  fontSize: 12,
+                  height: 16 / 12,
+                  letterSpacing: 0.24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _AmenityButton extends StatelessWidget {
+  const _AmenityButton({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: selected ? AppTheme.surfaceContainerLowest : AppTheme.surfaceContainerLow,
+    borderRadius: BorderRadius.circular(12),
+    elevation: selected ? 1 : 0,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: selected ? AppTheme.primaryDeep : AppTheme.outline,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: selected
+                      ? AppTheme.onSurface
+                      : AppTheme.onSurfaceVariant,
+                  fontSize: 12,
+                  height: 16 / 12,
+                  letterSpacing: 0.24,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: selected
+                    ? AppTheme.primaryDeep
+                    : AppTheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: selected
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: AppTheme.onPrimary,
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _CampusButton extends StatelessWidget {
+  const _CampusButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: selected ? AppTheme.primaryDeep : AppTheme.surfaceContainer,
+    borderRadius: BorderRadius.circular(12),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 48),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(
+              Icons.school_rounded,
+              size: 20,
+              color: selected ? AppTheme.onPrimary : AppTheme.outline,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: selected ? AppTheme.onPrimary : AppTheme.onSurface,
+                  fontSize: 12,
+                  height: 16 / 12,
+                  letterSpacing: 0.24,
+                ),
+              ),
+            ),
+            if (selected) ...[
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 18,
+                color: AppTheme.onPrimary,
+              ),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _BottomButton extends StatelessWidget {
+  const _BottomButton({
+    required this.label,
+    required this.background,
+    required this.foreground,
+    required this.onTap,
+    this.icon,
+  });
+
+  final String label;
+  final Color background;
+  final Color foreground;
+  final VoidCallback onTap;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: background,
+    borderRadius: BorderRadius.circular(999),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: SizedBox(
+        height: 48,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: foreground,
+                fontSize: 14,
+                height: 20 / 14,
+                letterSpacing: 0.14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (icon != null) ...[
+              const SizedBox(width: 8),
+              Icon(icon, size: 18, color: foreground),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
 }

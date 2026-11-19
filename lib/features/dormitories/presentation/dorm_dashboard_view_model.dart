@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/dormitory_repository.dart';
 import '../domain/dormitory.dart';
+import '../domain/dormitory_search_filters.dart';
 
 class DormDashboardViewModel extends ChangeNotifier {
   DormDashboardViewModel({
@@ -22,6 +23,7 @@ class DormDashboardViewModel extends ChangeNotifier {
   List<Dormitory> _dormitories = const [];
   final Set<String> _favoriteIds = {};
   String _searchQuery = '';
+  DormitorySearchFilters? _searchFilters;
   bool _isLoading = true;
   bool _showFavoritesOnly = false;
   Object? _error;
@@ -31,6 +33,7 @@ class DormDashboardViewModel extends ChangeNotifier {
   Object? get error => _error;
   bool get showFavoritesOnly => _showFavoritesOnly;
   String get searchQuery => _searchQuery;
+  DormitorySearchFilters? get searchFilters => _searchFilters;
   bool isFavorite(String dormitoryId) => _favoriteIds.contains(dormitoryId);
 
   List<Dormitory> get visibleDormitories {
@@ -42,16 +45,20 @@ class DormDashboardViewModel extends ChangeNotifier {
       );
     }
 
-    final query = _searchQuery.trim().toLowerCase();
-    if (query.isNotEmpty) {
-      results = results.where((dormitory) {
-        final searchableText = [
-          dormitory.name,
-          dormitory.address,
-          ...dormitory.amenities,
-        ].join(' ').toLowerCase();
-        return searchableText.contains(query);
-      });
+    if (_searchFilters case final filters?) {
+      results = results.where(filters.matches);
+    } else {
+      final query = _searchQuery.trim().toLowerCase();
+      if (query.isNotEmpty) {
+        results = results.where((dormitory) {
+          final searchableText = [
+            dormitory.name,
+            dormitory.address,
+            ...dormitory.amenities,
+          ].join(' ').toLowerCase();
+          return searchableText.contains(query);
+        });
+      }
     }
 
     return results.toList(growable: false);
@@ -59,6 +66,15 @@ class DormDashboardViewModel extends ChangeNotifier {
 
   void updateSearch(String value) {
     _searchQuery = value;
+    if (_searchFilters case final filters?) {
+      _searchFilters = filters.copyWith(query: value);
+    }
+    notifyListeners();
+  }
+
+  void applySearchFilters(DormitorySearchFilters filters) {
+    _searchFilters = filters;
+    _searchQuery = filters.query;
     notifyListeners();
   }
 
