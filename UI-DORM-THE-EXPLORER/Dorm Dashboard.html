@@ -1,0 +1,303 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "tertiary-fixed": "#ffddb8", "error": "#ba1a1a", "surface-container": "#eeeef0", "on-secondary-fixed-variant": "#005236", "on-tertiary-fixed-variant": "#653e00", "surface-bright": "#f9f9fc", "primary-fixed-dim": "#ffb3b3", "inverse-surface": "#2f3133", "on-background": "#1a1c1e", "tertiary": "#593600", "on-tertiary-fixed": "#2a1700", "primary-fixed": "#ffdad9", "on-error": "#ffffff", "surface-tint": "#b42537", "error-container": "#ffdad6", "tertiary-container": "#784b00", "on-surface-variant": "#594040", "inverse-on-surface": "#f0f0f3", "secondary-fixed-dim": "#4edea3", "outline-variant": "#e1bebe", "on-primary-fixed": "#400009", "surface-variant": "#e2e2e5", "on-primary": "#ffffff", "tertiary-fixed-dim": "#ffb95f", "on-secondary": "#ffffff", "on-tertiary-container": "#ffbd6b", "outline": "#8d7070", "surface-container-low": "#f3f3f6", "surface-container-high": "#e8e8ea", "surface-dim": "#d9dadc", "secondary": "#006c49", "secondary-container": "#6cf8bb", "primary-container": "#a6192e", "inverse-primary": "#ffb3b3", "on-surface": "#1a1c1e", "surface": "#f9f9fc", "on-tertiary": "#ffffff", "on-secondary-fixed": "#002113", "on-primary-fixed-variant": "#920322", "surface-container-highest": "#e2e2e5", "secondary-fixed": "#6ffbbe", "surface-container-lowest": "#ffffff", "on-secondary-container": "#00714d", "on-error-container": "#93000a", "on-primary-container": "#ffb7b7", "primary": "#81001c", "background": "#f9f9fc" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-lg": "1.5rem", "space-xl": "2rem", "margin": "1rem", "gutter": "1rem", "space-sm": "0.5rem", "space-md": "1rem", "space-xs": "0.25rem" }, fontFamily: { "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "title-md": ["Plus Jakarta Sans"] }, fontSize: { "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "700" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-on-primary shadow-sm shrink-0"><span class="material-symbols-outlined text-[20px]">apartment</span></div><div class="flex flex-col min-w-0"><span class="font-title-md text-title-md text-primary font-extrabold tracking-wider">DormTheExplorer</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-20 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Friendly Student Greeting & Search Section -->
+<section class="px-margin pt-space-md pb-space-sm flex flex-col gap-space-sm"><div class="flex flex-col mt-1"><h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-bold">Find your next dorm&nbsp;</h2><p class="font-body-sm text-body-sm text-on-surface-variant">Browse student accommodations across Batangas City</p></div><div class="flex items-center gap-2 mt-2"><div class="flex items-center flex-1 h-12 bg-surface-container-lowest rounded-xl shadow-sm px-4 gap-2.5 focus-within:ring-2 focus-within:ring-primary-container transition-all"><span class="material-symbols-outlined text-[20px] text-outline">search</span><input id="home-search-input" class="w-full bg-transparent border-0 outline-none font-body-sm text-body-sm text-on-surface placeholder:text-outline" placeholder="Search dormitories in Batangas City..." type="search" aria-label="Search dormitories"></div><button aria-label="Filters" onclick="window.location.href='Search%20and%20Filters.html'" class="h-12 px-4 rounded-xl bg-primary-container text-on-primary flex items-center gap-1.5 shadow-sm active:scale-95 transition-transform shrink-0" type="button"><span class="material-symbols-outlined text-[18px]">tune</span><span class="font-label-md text-label-md font-bold">Filters</span></button></div></section>
+<!-- Quick Filter Pills (Horizontal Scrolling) -->
+
+<!-- Campus Selector Chips (Batangas City Collegiate Hub) -->
+
+<!-- Interactive Filter Controls Summary Bar -->
+
+<!-- Featured Dormitories Carousel Header -->
+
+<!-- Featured Dormitories Carousel -->
+
+<!-- Verified Safe Campus Community Banner -->
+
+<!-- Nearby Batangas City Campuses (Vertical Rich Cards) -->
+<section class="px-margin pt-space-md pb-space-sm flex flex-col gap-1"><div class="flex items-center justify-between mb-1"><div><h2 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">Dormitories in Batangas City</h2><span class="font-body-sm text-body-sm text-on-surface-variant">Showing 6 verified dorms available for rent</span></div></div>
+<div class="grid grid-cols-2 gap-3 mt-2">
+<!-- Card 1 -->
+<article data-dorm-id="red-gate" class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(30,32,34,0.05)] flex flex-col relative group transition-all">
+<div class="relative w-full h-32 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Modern Philippine university dorm bedroom with cozy pine wood bunk beds, clean white linens, individual warm study lamps, organized wooden study desks with laptop and notebooks, bright natural daylight streaming through tall windows, warm crimson accent cushions, minimalist and tidy student room in Batangas City" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnfOodUXxRz4vZth82Y1USujlbfkqaE5-ITvqd1WOYIKj5cNERtapt2SRVtsSZZYnkCyGtt3RPzot09aAP1h_ZB5FdQH5s0BMANFng3uEL_Sziiw6hKhqMhDFya3_CzAkSVWfWs0it2Mld5ZaWk8BwtLbihb3KNQljkOkepltvGhsXBGZqZfhejTtS4Dsnpp8uOuHULvjayuyKPQEd3A0KD_VeDDiaht3cU92fRcc">
+<button aria-label="Add to favorites" class="fav-btn absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant shadow-sm active:scale-90 transition-transform" onclick="toggleFav(this)" fdprocessedid="7h6var">
+<span class="material-symbols-outlined text-[15px]">favorite</span>
+</button>
+<div class="absolute bottom-1.5 left-1.5 bg-secondary-fixed/95 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-sm text-[10px] font-bold text-on-secondary-fixed">2 slots left</span>
+</div>
+</div>
+<div class="p-3 flex flex-col justify-between flex-1 gap-1.5">
+<div>
+<div class="flex items-center gap-1 text-primary-container font-label-sm text-[10px] font-bold uppercase truncate">
+<span class="material-symbols-outlined text-[12px]">near_me</span>
+<span>250m to Rizal Ave</span>
+</div>
+<h3 class="font-title-md text-[14px] font-bold text-on-surface truncate mt-0.5">Red Gate Student Residence</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant truncate">Rizal Ave, Batangas City</p>
+</div>
+<div class="flex items-baseline justify-between pt-1 border-t border-surface-container">
+<div>
+<span class="font-title-md text-[15px] font-extrabold text-primary-container">₱3,800</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant">/mo</span>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary-container font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>4.9
+</span>
+</div>
+</div>
+</article>
+<!-- Card 2 -->
+<article data-dorm-id="alangilan-heights" class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(30,32,34,0.05)] flex flex-col relative group transition-all">
+<div class="relative w-full h-32 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Cozy student female dormitory room in Alangilan Batangas, featuring clean pastel accents, twin captain beds with storage drawers underneath, warm fairy lights over a tidy pinboard, potted green succulent plant, ergonomic study chair, peaceful and secured apartment interior, afternoon golden glow lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHunZoe4Lx75lrgM_dIgm69k9SuJF_zyjrRlpFeqUqij8ck60hUlWKu0fJnmwzoMR73vS11prjTlw4M7AQm5fp9Xi1hB7PLTu6eBGAM4n3V2Hfd52JTlzgy33O7E-V3u3TG9ZbA2otl1g2IzHNngJDFyWTlBvyu4yZ1udke7wEG2rbyx7dp-IvKLrknKFoVWXjJO0GOP3jzpI1E7sk0spUUjcBgsYN9SNAu-v12S4">
+<button aria-label="Add to favorites" class="fav-btn absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant shadow-sm active:scale-90 transition-transform" onclick="toggleFav(this)" fdprocessedid="60wo6q">
+<span class="material-symbols-outlined text-[15px]">favorite</span>
+</button>
+<div class="absolute bottom-1.5 left-1.5 bg-tertiary-fixed/95 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+<span class="font-label-sm text-[10px] font-bold text-on-tertiary-fixed">1 slot left</span>
+</div>
+</div>
+<div class="p-3 flex flex-col justify-between flex-1 gap-1.5">
+<div>
+<div class="flex items-center gap-1 text-primary-container font-label-sm text-[10px] font-bold uppercase truncate">
+<span class="material-symbols-outlined text-[12px]">near_me</span>
+<span>300m to Alangilan Rd</span>
+</div>
+<h3 class="font-title-md text-[14px] font-bold text-on-surface truncate mt-0.5">Alangilan Heights Dorm</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant truncate">Golden Country, Batangas</p>
+</div>
+<div class="flex items-baseline justify-between pt-1 border-t border-surface-container">
+<div>
+<span class="font-title-md text-[15px] font-extrabold text-primary-container">₱2,900</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant">/mo</span>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary-container font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>4.8
+</span>
+</div>
+</div>
+</article>
+<!-- Card 3 -->
+<article data-dorm-id="casa-batangueña" class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(30,32,34,0.05)] flex flex-col relative group transition-all">
+<div class="relative w-full h-32 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Cozy student bedroom in downtown Poblacion Batangas City, rustic modern Filipino timber finishes, wide wooden study table, clean tiled floor, ceiling fan, wide window view over campus trees, warm sunlight, neat backpack and study supplies on shelf" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrGb5Q3WB9rx4b04xHmvMLSLJxyhoYZVXjAaXEnoDa2An7tnywzlXPBC_8bTGIZBy5fRGLQTtGH8ztsx-UHsvmmDc-h2gxAGzFxq7mIAVTN3566LWqtq8siwxIkUYHCXSh94ht1AoFqlYd1ZVXEtLZXo0d4too2NtSonqhvA89lMPQLaOgp_sJA0ytig1beS0TI1vxf71WwRO485fw0grKxXQYIvcL4H2dM7qIgdg">
+<button aria-label="Add to favorites" class="fav-btn absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant shadow-sm active:scale-90 transition-transform" onclick="toggleFav(this)" fdprocessedid="3m8nph">
+<span class="material-symbols-outlined text-[15px]">favorite</span>
+</button>
+<div class="absolute bottom-1.5 left-1.5 bg-secondary-fixed/95 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-[10px] font-bold text-on-secondary-fixed">3 slots left</span>
+</div>
+</div>
+<div class="p-3 flex flex-col justify-between flex-1 gap-1.5">
+<div>
+<div class="flex items-center gap-1 text-primary-container font-label-sm text-[10px] font-bold uppercase truncate">
+<span class="material-symbols-outlined text-[12px]">near_me</span>
+<span>P. Burgos / Plaza</span>
+</div>
+<h3 class="font-title-md text-[14px] font-bold text-on-surface truncate mt-0.5">Casa Batangueña Living</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant truncate">P. Burgos, Poblacion</p>
+</div>
+<div class="flex items-baseline justify-between pt-1 border-t border-surface-container">
+<div>
+<span class="font-title-md text-[15px] font-extrabold text-primary-container">₱3,200</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant">/mo</span>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary-container font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>4.7
+</span>
+</div>
+</div>
+</article>
+<!-- Card 4 (Full / 0 slots) -->
+<article data-dorm-id="scholars-haven" class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(30,32,34,0.05)] flex flex-col relative group transition-all opacity-95">
+<div class="relative w-full h-32 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Bright student bedroom dormitory in Kumintang Ibaba Batangas, double deck bed with fresh blue bedsheets, individual study lamps on wall, modern locker cabinets, water dispenser visible in hallway, warm clean ambient interior design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6NyQfIOa5wZ8p1_m4VALCHXKOXnEksxzbAuxWcqNA3Ht5-SQ1GByG_UPnH7dmhIWkHlOinhebqiqA6m6CAy-5OlQUFrO7kWvntH9f_PqYjghmhrqCeMCRNlGGj5VV1pbHUr3crSVMk3rwY240EYtdDwfckyi3XpW68xLuCafNl5vc1wsAgyB8MWBctwjkf63CNx9NF8x_KJoDLN7BbcCs8v-sxVk3ErQoPHESz3s">
+<button aria-label="Add to favorites" class="fav-btn absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant shadow-sm active:scale-90 transition-transform" onclick="toggleFav(this)" fdprocessedid="hqink7">
+<span class="material-symbols-outlined text-[15px]">favorite</span>
+</button>
+<div class="absolute bottom-1.5 left-1.5 bg-inverse-surface/90 text-inverse-on-surface px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="font-label-sm text-[10px] font-bold">FULL (0 slots)</span>
+</div>
+</div>
+<div class="p-3 flex flex-col justify-between flex-1 gap-1.5">
+<div>
+<div class="flex items-center gap-1 text-primary-container font-label-sm text-[10px] font-bold uppercase truncate">
+<span class="material-symbols-outlined text-[12px]">near_me</span>
+<span>Kumintang Ibaba</span>
+</div>
+<h3 class="font-title-md text-[14px] font-bold text-on-surface truncate mt-0.5">The Scholar's Haven</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant truncate">Kumintang Ibaba, Batangas</p>
+</div>
+<div class="flex items-baseline justify-between pt-1 border-t border-surface-container">
+<div>
+<span class="font-title-md text-[15px] font-extrabold text-primary-container">₱2,500</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant">/mo</span>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary-container font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>4.6
+</span>
+</div>
+</div>
+</article>
+<!-- Card 5 -->
+<article data-dorm-id="st-claire" class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(30,32,34,0.05)] flex flex-col relative group transition-all">
+<div class="relative w-full h-32 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Modern spacious student co-living bedroom in Batangas City, equipped with split-type inverter aircon, glass sliding doors leading to a scenic rooftop deck, white modern study desk with bookshelf, comfortable wooden single bed, natural bright morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkMZ31QYKISrDPxI8_UsXVTubpkxtbm3x26usBj2RMUUP-N64h3U59uuasEN38t8SMYk_T1f3RShb-p1FZOlh-1Mdp0CWvbshlT4YrMGS4hinOiCawoiqm0A_aDUiM96wi1U2ig_VuKRcKkySsGvZklXojDcPp-zftYZZikR3UsdLjsC3y_ybbSlUyVtmHjgzgdd-_9pNcq2jSzfOEM7Jvd5PdPI72UMpIiuto-SE">
+<button aria-label="Add to favorites" class="fav-btn absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant shadow-sm active:scale-90 transition-transform" onclick="toggleFav(this)" fdprocessedid="yub8ab">
+<span class="material-symbols-outlined text-[15px]">favorite</span>
+</button>
+<div class="absolute bottom-1.5 left-1.5 bg-secondary-fixed/95 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-[10px] font-bold text-on-secondary-fixed">4 slots left</span>
+</div>
+</div>
+<div class="p-3 flex flex-col justify-between flex-1 gap-1.5">
+<div>
+<div class="flex items-center gap-1 text-primary-container font-label-sm text-[10px] font-bold uppercase truncate">
+<span class="material-symbols-outlined text-[12px]">near_me</span>
+<span>Gulod Labac Hub</span>
+</div>
+<h3 class="font-title-md text-[14px] font-bold text-on-surface truncate mt-0.5">St. Claire Student Living</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant truncate">Gulod Labac, Batangas</p>
+</div>
+<div class="flex items-baseline justify-between pt-1 border-t border-surface-container">
+<div>
+<span class="font-title-md text-[15px] font-extrabold text-primary-container">₱3,600</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant">/mo</span>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary-container font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>4.85
+</span>
+</div>
+</div>
+</article>
+<!-- Card 6 -->
+<article data-dorm-id="university-suites" class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(30,32,34,0.05)] flex flex-col relative group transition-all">
+<div class="relative w-full h-32 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Modern studio apartment room for college students near University of Batangas, compact private kitchenette with induction cooktop, modern private bathroom with ceramic tiles, comfortable memory foam single bed, warm atmospheric mood lighting, crimson accent throw pillow and modern architectural layout" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5Nc4FxjniJkI5s-GLreMFRzKwgOgvWM239rwoH3Twjm-1ZJA8kU-ZgpFCsa0sJbSHu-v744t_xynnfFx9DwPJR4YRSkMscer6JcJOYTAcbMJlg3gPQrIlwh1xHuhepIsNjzATNDLvdhV9oXNrJYLPNIMpWxm8Ru9XypxUqEohX86Pv3_2hBxLrjL36pC9z8MzRnK6iGZmwcPC86GrZmT_QeMmXxJ3pp3nmbZRGQM">
+<button aria-label="Add to favorites" class="fav-btn absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-on-surface-variant shadow-sm active:scale-90 transition-transform" onclick="toggleFav(this)" fdprocessedid="npaz2t">
+<span class="material-symbols-outlined text-[15px]">favorite</span>
+</button>
+<div class="absolute bottom-1.5 left-1.5 bg-secondary-fixed/95 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-[10px] font-bold text-on-secondary-fixed">1 slot left</span>
+</div>
+</div>
+<div class="p-3 flex flex-col justify-between flex-1 gap-1.5">
+<div>
+<div class="flex items-center gap-1 text-primary-container font-label-sm text-[10px] font-bold uppercase truncate">
+<span class="material-symbols-outlined text-[12px]">near_me</span>
+<span>Hilltop / MH Del Pilar</span>
+</div>
+<h3 class="font-title-md text-[14px] font-bold text-on-surface truncate mt-0.5">University Suites Batangas</h3>
+<p class="font-body-sm text-[11px] text-on-surface-variant truncate">Hilltop, Batangas City</p>
+</div>
+<div class="flex items-baseline justify-between pt-1 border-t border-surface-container">
+<div>
+<span class="font-title-md text-[15px] font-extrabold text-primary-container">₱4,500</span>
+<span class="font-body-sm text-[10px] text-on-surface-variant">/mo</span>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary-container font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>4.95
+</span>
+</div>
+</div>
+</article>
+</div></section>
+<!-- Interactive Map Exploration Floating Callout -->
+
+<!-- Toast notification for bookmarking delight -->
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-4 py-2 rounded-full font-label-md text-label-md shadow-lg flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300 z-50" id="toastNotification">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span id="toastText">Added to your favorites!</span>
+</div>
+</div>
+<script>
+  // Flutter-style micro-interactions for Heart / Favorites Button
+  function toggleFav(btn) {
+    const icon = btn.querySelector('.material-symbols-outlined');
+    const isFilled = icon.style.fontVariationSettings && icon.style.fontVariationSettings.includes("'FILL' 1");
+    const toast = document.getElementById('toastNotification');
+    const toastText = document.getElementById('toastText');
+
+    if (isFilled) {
+      icon.style.fontVariationSettings = "'FILL' 0";
+      btn.classList.remove('text-primary-container');
+      btn.classList.add('text-on-surface-variant');
+      toastText.innerText = "Removed from your favorites";
+    } else {
+      icon.style.fontVariationSettings = "'FILL' 1";
+      btn.classList.remove('text-on-surface-variant');
+      btn.classList.add('text-primary-container');
+      toastText.innerText = "Saved to your favorites!";
+    }
+
+    // Show Delight Toast
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+    setTimeout(() => {
+      toast.classList.remove('opacity-100');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    }, 1800);
+  }
+
+  // Filter Pill Selection Toggle
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(p => {
+        p.classList.remove('bg-primary-container', 'text-on-primary', 'active');
+        p.classList.add('bg-surface-container-lowest', 'text-on-surface-variant');
+      });
+      pill.classList.remove('bg-surface-container-lowest', 'text-on-surface-variant');
+      pill.classList.add('bg-primary-container', 'text-on-primary', 'active');
+    });
+  });
+
+  // Reset Filters feedback
+  function resetFilters() {
+    const firstPill = document.querySelector('.filter-pill[data-filter="all"]');
+    if (firstPill) firstPill.click();
+    const toast = document.getElementById('toastNotification');
+    const toastText = document.getElementById('toastText');
+    toastText.innerText = "Filters restored to default";
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+    setTimeout(() => {
+      toast.classList.remove('opacity-100');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    }, 1500);
+  }
+
+  // Campus Selector tap animation feedback
+  document.querySelectorAll('.campus-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const campusName = card.querySelector('.font-bold').innerText;
+      const toast = document.getElementById('toastNotification');
+      const toastText = document.getElementById('toastText');
+      toastText.innerText = `Showing dorms near ${campusName}`;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 1500);
+    });
+  });
+</script><script src="js/dashboard-navigation.js" defer></script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(30,32,34,0.05)]" data-active-classes="text-primary-container font-bold"><div class="flex justify-around items-center h-16 px-margin"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[64px] h-12 transition-colors text-primary-container font-bold" data-path="home" href="Dorm%20Dashboard.html"><span class="material-symbols-outlined text-[24px]">home</span><span class="font-label-sm text-label-sm mt-0.5">Home</span></a><a aria-disabled="true" title="Favorites page coming soon" tabindex="-1" class="flex flex-col items-center justify-center min-w-[64px] h-12 text-on-surface-variant transition-colors" data-path="favorites"><span class="material-symbols-outlined text-[24px]">favorite</span><span class="font-label-sm text-label-sm mt-0.5">Favorites</span></a><a aria-disabled="true" title="Profile page coming soon" tabindex="-1" class="flex flex-col items-center justify-center min-w-[64px] h-12 text-on-surface-variant transition-colors" data-path="profile"><span class="material-symbols-outlined text-[24px]">person</span><span class="font-label-sm text-label-sm mt-0.5">Profile</span></a></div></nav>
+
+<span id="PING_CONTENT_PUSH_NOTIFICATION" style="display: none;"></span><span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span>
+
+<span id="PING_CONTENT_PUSH_NOTIFICATION" style="display: none;"></span><span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span>
+
+<span id="PING_CONTENT_PUSH_NOTIFICATION" style="display: none;"></span><span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span></body></html>
