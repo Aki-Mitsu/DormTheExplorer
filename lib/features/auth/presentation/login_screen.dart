@@ -9,11 +9,7 @@ import '../../../services/auth_service.dart';
 typedef LoginSubmitCallback = void Function(String email, String password);
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({
-    super.key,
-    this.onLogin,
-    this.onForgotPassword,
-  });
+  const LoginScreen({super.key, this.onLogin, this.onForgotPassword});
 
   final LoginSubmitCallback? onLogin;
   final ValueChanged<String>? onForgotPassword;
@@ -43,10 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isSubmitting || !(_formKey.currentState?.validate() ?? false)) return;
 
     if (widget.onLogin != null) {
-      widget.onLogin!(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      widget.onLogin!(_emailController.text.trim(), _passwordController.text);
       return;
     }
 
@@ -100,9 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _openCreateAccount() {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const CreateAccountScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const CreateAccountScreen()),
     );
   }
 
@@ -132,18 +123,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           const AuthBrandHeader(
                             title: 'Welcome back!',
-                            description:
-                                'Sign in to manage your dorm listings or find your next home in Batangas City',
+                            description: 'Sign in to manage your dorm listings or find your next home in Batangas City',
                             logoSize: 112,
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: AuthFormCard(
-                              padding: const EdgeInsets.fromLTRB(28, 26, 28, 28),
+                              padding: const EdgeInsets.fromLTRB(
+                                28,
+                                26,
+                                28,
+                                28,
+                              ),
                               child: Form(
                                 key: _formKey,
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     const AuthFieldLabel(
                                       text: 'Email Address',
@@ -154,7 +150,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       controller: _emailController,
                                       keyboardType: TextInputType.emailAddress,
                                       textInputAction: TextInputAction.next,
-                                      autofillHints: const [AutofillHints.email],
+                                      autofillHints: const [
+                                        AutofillHints.email,
+                                      ],
                                       inputFormatters: [
                                         FilteringTextInputFormatter.deny(
                                           RegExp(r'\s'),
@@ -174,7 +172,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       controller: _passwordController,
                                       obscureText: _obscurePassword,
                                       textInputAction: TextInputAction.done,
-                                      autofillHints: const [AutofillHints.password],
+                                      autofillHints: const [
+                                        AutofillHints.password,
+                                      ],
                                       onFieldSubmitted: (_) => _submit(),
                                       decoration: authInputDecoration(
                                         context,
@@ -200,8 +200,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       validator: (value) =>
                                           (value ?? '').isEmpty
-                                              ? 'Enter your password'
-                                              : null,
+                                          ? 'Enter your password'
+                                          : null,
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
@@ -237,14 +237,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         ),
                                         TextButton(
-                                          onPressed: _isSendingReset ? null : _sendPasswordReset,
+                                          onPressed: _isSendingReset
+                                              ? null
+                                              : _sendPasswordReset,
                                           style: TextButton.styleFrom(
                                             foregroundColor:
                                                 AppTheme.primaryContainer,
                                             padding: EdgeInsets.zero,
                                             minimumSize: const Size(0, 40),
-                                            tapTargetSize:
-                                                MaterialTapTargetSize.shrinkWrap,
+                                            tapTargetSize: MaterialTapTargetSize
+                                                .shrinkWrap,
                                           ),
                                           child: Text(
                                             'Forgot Password?',
@@ -252,7 +254,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 .textTheme
                                                 .labelMedium
                                                 ?.copyWith(
-                                                  color: AppTheme.primaryContainer,
+                                                  color:
+                                                      AppTheme.primaryContainer,
                                                 ),
                                           ),
                                         ),
@@ -262,7 +265,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     SizedBox(
                                       height: 56,
                                       child: FilledButton(
-                                        onPressed: _isSubmitting ? null : _submit,
+                                        onPressed: _isSubmitting
+                                            ? null
+                                            : _submit,
                                         style: FilledButton.styleFrom(
                                           backgroundColor:
                                               AppTheme.primaryContainer,
@@ -276,7 +281,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                               MainAxisAlignment.center,
                                           children: [
                                             Text(
-                                              _isSubmitting ? 'Signing In…' : 'Sign In',
+                                              _isSubmitting
+                                                  ? 'Signing In…'
+                                                  : 'Sign In',
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .labelLarge
@@ -307,9 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 Text(
                                   "Don't have an account? ",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         color: AppTheme.onSurfaceVariant,
                                       ),

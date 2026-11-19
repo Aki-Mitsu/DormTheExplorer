@@ -13,10 +13,7 @@ typedef CreateAccountCallback = void Function({
 });
 
 class CreateAccountScreen extends StatefulWidget {
-  const CreateAccountScreen({
-    super.key,
-    this.onCreateAccount,
-  });
+  const CreateAccountScreen({super.key, this.onCreateAccount});
 
   final CreateAccountCallback? onCreateAccount;
 
@@ -79,16 +76,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(content: Text('Account created. You can now sign in.')),
+          const SnackBar(content: Text('Account created successfully.')),
         );
-      Navigator.of(context).pop();
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(AuthService.messageFor(error))),
-        );
+        ..showSnackBar(SnackBar(content: Text(AuthService.messageFor(error))));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -115,8 +110,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       children: [
                         const AuthBrandHeader(
                           title: 'Create Account',
-                          description:
-                              'Join thousands finding trusted dorms & rooms in Batangas.',
+                          description: 'Join thousands finding trusted dorms & rooms in Batangas.',
                           logoSize: 56,
                           compact: true,
                           showPortalBadge: false,
@@ -128,9 +122,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             children: [
                               Text(
                                 'I WANT TO:',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelMedium
+                                style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(
                                       color: AppTheme.onSurface,
                                       letterSpacing: 0.2,
@@ -192,8 +184,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                     ),
                                     validator: (value) =>
                                         (value ?? '').trim().length < 2
-                                            ? 'Enter your full name'
-                                            : null,
+                                        ? 'Enter your full name'
+                                        : null,
                                   ),
                                   const SizedBox(height: 12),
                                   const AuthFieldLabel(text: 'Email Address'),
@@ -251,8 +243,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                     ),
                                     validator: (value) =>
                                         (value ?? '').length < 6
-                                            ? 'Use at least 6 characters'
-                                            : null,
+                                        ? 'Use at least 6 characters'
+                                        : null,
                                   ),
                                   const SizedBox(height: 3),
                                   Padding(
@@ -306,8 +298,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                     ),
                                     validator: (value) =>
                                         value != _passwordController.text
-                                            ? 'Passwords do not match'
-                                            : null,
+                                        ? 'Passwords do not match'
+                                        : null,
                                   ),
                                 ],
                               ),
@@ -381,9 +373,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 'Please accept the terms to continue.',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
+                                style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(color: AppTheme.error),
                               ),
                             ),
@@ -399,14 +389,17 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 backgroundColor: AppTheme.primaryContainer,
                                 foregroundColor: AppTheme.onPrimary,
                                 elevation: 5,
-                                shadowColor:
-                                    AppTheme.primary.withValues(alpha: 0.24),
+                                shadowColor: AppTheme.primary.withValues(
+                                  alpha: 0.24,
+                                ),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    _isSubmitting ? 'Creating Account…' : 'Create Account',
+                                    _isSubmitting
+                                        ? 'Creating Account…'
+                                        : 'Create Account',
                                     style: Theme.of(context)
                                         .textTheme
                                         .labelLarge
@@ -431,9 +424,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             children: [
                               Text(
                                 'Already have an account? ',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
+                                style: Theme.of(context).textTheme.bodySmall
                                     ?.copyWith(
                                       color: AppTheme.onSurfaceVariant,
                                     ),
@@ -441,8 +432,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               TextButton(
                                 onPressed: () => Navigator.maybePop(context),
                                 style: TextButton.styleFrom(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 2,
+                                  ),
                                   minimumSize: const Size(0, 36),
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
@@ -450,9 +442,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 ),
                                 child: Text(
                                   'Sign In',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelLarge
+                                  style: Theme.of(context).textTheme.labelLarge
                                       ?.copyWith(
                                         color: AppTheme.primaryContainer,
                                       ),
@@ -505,8 +495,9 @@ class _AccountTypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground =
-        selected ? AppTheme.primaryDeep : AppTheme.onSurfaceVariant;
+    final foreground = selected
+        ? AppTheme.primaryDeep
+        : AppTheme.onSurfaceVariant;
 
     return Material(
       color: selected ? AppTheme.primaryFixed : AppTheme.surfaceContainerLow,
@@ -540,32 +531,25 @@ class _AccountTypeCard extends StatelessWidget {
                           ? Icons.check_circle_outline_rounded
                           : Icons.radio_button_unchecked_rounded,
                       size: 16,
-                      color: selected
-                          ? AppTheme.primaryDeep
-                          : AppTheme.outline,
+                      color: selected ? AppTheme.primaryDeep : AppTheme.outline,
                     ),
                   ],
                 ),
                 const Spacer(),
                 Text(
                   title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
+                  style: Theme.of(context).textTheme.titleMedium
                       ?.copyWith(color: AppTheme.onSurface, height: 1.1),
                 ),
                 Text(
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        color: AppTheme.onSurfaceVariant,
-                        fontSize: 10,
-                        height: 1.2,
-                      ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 10,
+                    height: 1.2,
+                  ),
                 ),
               ],
             ),

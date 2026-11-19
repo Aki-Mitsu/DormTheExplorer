@@ -38,18 +38,21 @@ class AuthService {
     }
   }
 
-  Future<void> logIn(String email, String password) async {
-    await _auth.signInWithEmailAndPassword(
+  String? get currentUserId => _auth.currentUser?.uid;
+
+  Future<String?> logIn(String email, String password) async {
+    final credential = await _auth.signInWithEmailAndPassword(
       email: email.trim(),
       password: password,
     );
+    final userId = credential.user?.uid;
+    return userId == null ? null : getRole(userId);
   }
 
   Future<void> signOut() => _auth.signOut();
 
-  Future<void> resetPassword(String email) => _auth.sendPasswordResetEmail(
-        email: email.trim(),
-      );
+  Future<void> resetPassword(String email) =>
+      _auth.sendPasswordResetEmail(email: email.trim());
 
   Future<String?> getRole(String uid) async {
     final doc = await _db.collection('users').doc(uid).get();
@@ -62,11 +65,13 @@ class AuthService {
         'email-already-in-use' => 'An account already exists for this email.',
         'invalid-email' => 'Enter a valid email address.',
         'weak-password' => 'Choose a stronger password.',
-        'user-not-found' || 'wrong-password' || 'invalid-credential' =>
-          'Email or password is incorrect.',
+        'user-not-found' ||
+        'wrong-password' ||
+        'invalid-credential' => 'Email or password is incorrect.',
         'user-disabled' => 'This account has been disabled.',
         'too-many-requests' => 'Too many attempts. Please try again later.',
-        'network-request-failed' => 'Check your internet connection and try again.',
+        'network-request-failed' =>
+          'Check your internet connection and try again.',
         'operation-not-allowed' =>
           'Email and password sign-in is not enabled in Firebase.',
         _ => error.message ?? 'Authentication failed. Please try again.',
