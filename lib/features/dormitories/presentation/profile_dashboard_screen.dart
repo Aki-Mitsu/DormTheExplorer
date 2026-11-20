@@ -89,35 +89,40 @@ class ProfileDashboardScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  Row(
+                                  Wrap(
+                                    alignment: WrapAlignment.spaceBetween,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    runSpacing: 4,
                                     children: [
-                                      Expanded(
-                                        child: Text(
-                                          'ACCOUNT CREDENTIALS',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelMedium
-                                              ?.copyWith(
-                                                color:
-                                                    AppTheme.onSurfaceVariant,
-                                                letterSpacing: 1,
-                                              ),
-                                        ),
-                                      ),
-                                      const Icon(
-                                        Icons.lock_outline_rounded,
-                                        size: 14,
-                                        color: AppTheme.secondary,
-                                      ),
-                                      const SizedBox(width: 4),
                                       Text(
-                                        'Firebase Authenticated',
+                                        'ACCOUNT CREDENTIALS',
                                         style: Theme.of(context)
                                             .textTheme
-                                            .labelSmall
+                                            .labelMedium
                                             ?.copyWith(
-                                              color: AppTheme.secondary,
+                                              color: AppTheme.onSurfaceVariant,
+                                              letterSpacing: 1,
                                             ),
+                                      ),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.lock_outline_rounded,
+                                            size: 14,
+                                            color: AppTheme.secondary,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Firebase Authenticated',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall
+                                                ?.copyWith(
+                                                  color: AppTheme.secondary,
+                                                ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
