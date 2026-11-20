@@ -496,14 +496,19 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       );
     }
 
-    final maxCardWidth = availableWidth < 600 ? 220.0 : 260.0;
+    final useSingleColumn = availableWidth < 380;
+    final maxCardWidth = useSingleColumn
+        ? availableWidth
+        : availableWidth < 600
+        ? 220.0
+        : 340.0;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: dormitories.length,
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: maxCardWidth,
-        mainAxisExtent: 235,
+        mainAxisExtent: useSingleColumn ? 260 : 235,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
