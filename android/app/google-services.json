@@ -12,7 +12,20 @@
           "package_name": "dormtheexplorer.app.dorm_the_explorer"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "515273837439-0jsl7vhutb8lrd215c2lhl1q865vegqu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dormtheexplorer.app.dorm_the_explorer",
+            "certificate_hash": "f9cfb103340b4883ddcce62aea85097aac4d81ca"
+          }
+        },
+        {
+          "client_id": "515273837439-2j5dol7q4kl30u86cfvi2c355v7p7oft.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB-WAn6T_f3duIOUbHrMpCCJ4n7v0NarSI"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "515273837439-2j5dol7q4kl30u86cfvi2c355v7p7oft.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "515273837439-tfkghgtfdispuehhk92lg9k6s2aqo5hc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "dormtheexplorer.app.dormTheExplorer"
+              }
+            }
+          ]
         }
       }
     }
