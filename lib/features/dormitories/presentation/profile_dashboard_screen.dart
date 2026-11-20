@@ -1,10 +1,12 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../theme/app_theme.dart';
+import '../data/cloudinary_upload_service.dart';
 
 class ProfileDashboardScreen extends StatelessWidget {
   const ProfileDashboardScreen({
@@ -366,6 +368,7 @@ class _ProfilePicture extends StatefulWidget {
 
 class _ProfilePictureState extends State<_ProfilePicture> {
   final ImagePicker _imagePicker = ImagePicker();
+  final CloudinaryUploadService _uploadService = CloudinaryUploadService();
   String? _photoUrl;
   bool _isUploading = false;
 
@@ -373,6 +376,12 @@ class _ProfilePictureState extends State<_ProfilePicture> {
   void initState() {
     super.initState();
     _photoUrl = widget.photoUrl;
+  }
+
+  @override
+  void dispose() {
+    _uploadService.close();
+    super.dispose();
   }
 
   @override
@@ -398,11 +407,8 @@ class _ProfilePictureState extends State<_ProfilePicture> {
         throw StateError('Your session expired. Please sign in again.');
       }
 
-      final photoRef = FirebaseStorage.instance.ref().child(
-        'profile-photos/${widget.userId}/avatar',
-      );
-      await photoRef.putData(await image.readAsBytes());
-      final downloadUrl = await photoRef.getDownloadURL();
+      final result = await _uploadService.uploadImage(File(image.path));
+      final downloadUrl = result.secureUrl;
       await currentUser.updatePhotoURL(downloadUrl);
 
       if (!mounted) return;
@@ -412,9 +418,12 @@ class _ProfilePictureState extends State<_ProfilePicture> {
       ).showSnackBar(const SnackBar(content: Text('Profile photo updated.')));
     } catch (error) {
       if (!mounted) return;
-      final message = error is FirebaseException
-          ? error.message ?? 'Could not upload your profile photo.'
-          : 'Could not upload your profile photo. Please try again.';
+      final message = switch (error) {
+        CloudinaryUploadException(:final message) => message,
+        StateError(:final message) => message,
+        FirebaseException(:final message?) => message,
+        _ => 'Could not upload your profile photo. Please try again.',
+      };
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(message)));
     } finally {
