@@ -26,6 +26,7 @@ class DormDashboardViewModel extends ChangeNotifier {
   DormitorySearchFilters? _searchFilters;
   bool _isLoading = true;
   bool _showFavoritesOnly = false;
+  bool _showLandlordListings = false;
   Object? _error;
 
   bool get isLandlord => accountRole == 'landlord';
@@ -79,7 +80,13 @@ class DormDashboardViewModel extends ChangeNotifier {
   }
 
   void toggleFavorite(String dormitoryId) {
-    if (!_favoriteIds.add(dormitoryId)) {
+    setFavorite(dormitoryId, !isFavorite(dormitoryId));
+  }
+
+  void setFavorite(String dormitoryId, bool isFavorite) {
+    if (isFavorite) {
+      _favoriteIds.add(dormitoryId);
+    } else {
       _favoriteIds.remove(dormitoryId);
     }
     notifyListeners();
@@ -96,6 +103,16 @@ class DormDashboardViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void showLandlordListings(bool show) {
+    if (!isLandlord || _showLandlordListings == show) return;
+    _showLandlordListings = show;
+    _subscription?.cancel();
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    _subscribe();
+  }
+
   void retry() {
     _subscription?.cancel();
     _isLoading = true;
@@ -105,7 +122,7 @@ class DormDashboardViewModel extends ChangeNotifier {
   }
 
   void _subscribe() {
-    final stream = isLandlord
+    final stream = isLandlord && _showLandlordListings
         ? repository.watchLandlordDormitories(userId)
         : repository.watchApprovedDormitories();
 

@@ -57,14 +57,11 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
   }
 
   void _selectDestination(int index) {
-    if (_isLandlord && index == 1) {
-      setState(() => _selectedDestination = 0);
-      _openAddDormitory();
+    setState(() => _selectedDestination = index);
+    if (_isLandlord) {
+      _viewModel.showLandlordListings(index == 1);
       return;
     }
-
-    setState(() => _selectedDestination = index);
-    if (_isLandlord) return;
 
     if (index == 0) {
       _viewModel.showAllDormitories();
@@ -119,22 +116,41 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.delete_forever_rounded),
+        iconColor: AppTheme.error,
+        iconPadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
         title: const Text('Delete Dormitory Listing?'),
+        titlePadding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         content: Text(
           'Are you sure you want to delete "${dormitory.name}"? This action cannot be undone.',
         ),
+        contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.error,
-              foregroundColor: AppTheme.onError,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete Listing'),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    backgroundColor: AppTheme.error,
+                    foregroundColor: AppTheme.onError,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Delete'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -147,9 +163,8 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         landlordId: widget.userId,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Listing deleted.')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Listing deleted.')));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -185,7 +200,9 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         child: Column(
           children: [
             if (_selectedDestination != 2)
-              _DashboardHeader(isLandlord: _isLandlord),
+              _DashboardHeader(
+                isLandlord: _isLandlord && _selectedDestination == 1,
+              ),
             Expanded(
               child: _selectedDestination == 2
                   ? ProfileDashboardScreen(
@@ -204,7 +221,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
                             alignment: Alignment.topCenter,
                             child: SizedBox(
                               width: contentWidth,
-                              child: _isLandlord
+                              child: _isLandlord && _selectedDestination == 1
                                   ? _buildLandlordContent()
                                   : _buildSeekerContent(contentWidth),
                             ),
@@ -235,13 +252,15 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Find your next dorm',
+          _isLandlord ? 'Explore Dormitories' : 'Find your next dorm',
           style: Theme.of(context).textTheme.headlineSmall
               ?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.3),
         ),
         const SizedBox(height: 4),
         Text(
-          'Browse student accommodations across Batangas City',
+          _isLandlord
+              ? 'Browse available student accommodations across Batangas City'
+              : 'Browse student accommodations across Batangas City',
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: AppTheme.onSurfaceVariant),
         ),
@@ -453,8 +472,6 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         message: isLandlord
             ? 'Your submitted listings will appear here.'
             : 'Tap the heart on a dormitory to save it here.',
-        actionLabel: isLandlord ? 'Add Dormitory' : null,
-        onAction: isLandlord ? _openAddDormitory : null,
       );
     }
 
@@ -468,8 +485,10 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
               dormitory: dormitories[index],
               onAvailabilityChanged: (value) =>
                   _setListingAvailability(dormitories[index], value),
-              onTap: () => _showDormitoryDetails(dormitories[index]),
-              onEdit: () => _showDormitoryDetails(dormitories[index]),
+              onTap: () =>
+                  _showDormitoryDetails(dormitories[index], isOwnListing: true),
+              onEdit: () =>
+                  _showDormitoryDetails(dormitories[index], isOwnListing: true),
               onDelete: () => _deleteListing(dormitories[index]),
             ),
           ],
@@ -492,26 +511,37 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         final dormitory = dormitories[index];
         return _DormitoryCard(
           dormitory: dormitory,
-          isLandlord: isLandlord,
+          isLandlord: false,
+          showFavorite: !_isLandlord,
           isFavorite: _viewModel.isFavorite(dormitory.id),
           onFavorite: () => _viewModel.toggleFavorite(dormitory.id),
-          onTap: () => _showDormitoryDetails(dormitory),
+          onTap: () => _showDormitoryDetails(
+            dormitory,
+            isOwnListing: _isLandlord && dormitory.landlordId == widget.userId,
+          ),
         );
       },
     );
   }
 
-  void _showDormitoryDetails(Dormitory dormitory) {
+  void _showDormitoryDetails(
+    Dormitory dormitory, {
+    required bool isOwnListing,
+  }) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => _isLandlord
+        builder: (context) => _isLandlord && isOwnListing
             ? LandlordDormitoryDetailsScreen(
                 dormitory: dormitory,
                 userId: widget.userId,
               )
             : DormDetailsScreen(
                 dormitory: dormitory,
-                canReview: true,
+                canReview: !_isLandlord,
+                canBookmark: !_isLandlord,
+                isFavorite: _viewModel.isFavorite(dormitory.id),
+                onFavoriteChanged: (isFavorite) =>
+                    _viewModel.setFavorite(dormitory.id, isFavorite),
               ),
       ),
     );
@@ -572,269 +602,272 @@ class _LandlordListingCardState extends State<_LandlordListingCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          SizedBox(
-            height: 176,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (photoUrl == null)
-                  Container(
-                    color: AppTheme.surfaceContainer,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.apartment_rounded,
-                      size: 42,
-                      color: AppTheme.outline,
-                    ),
-                  )
-                else
-                  Image.network(
-                    photoUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+            SizedBox(
+              height: 176,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (photoUrl == null)
+                    Container(
                       color: AppTheme.surfaceContainer,
                       alignment: Alignment.center,
                       child: Icon(
-                        Icons.broken_image_outlined,
-                        size: 38,
+                        Icons.apartment_rounded,
+                        size: 42,
                         color: AppTheme.outline,
                       ),
+                    )
+                  else
+                    Image.network(
+                      photoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: AppTheme.surfaceContainer,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          size: 38,
+                          color: AppTheme.outline,
+                        ),
+                      ),
                     ),
-                  ),
-                if (dormitory.proximityLabel?.isNotEmpty ?? false)
+                  if (dormitory.proximityLabel?.isNotEmpty ?? false)
+                    Positioned(
+                      left: 12,
+                      top: 12,
+                      child: _LandlordStatusChip(
+                        icon: Icons.school_outlined,
+                        label: dormitory.proximityLabel!,
+                        foreground: AppTheme.primaryContainer,
+                      ),
+                    ),
                   Positioned(
-                    left: 12,
                     top: 12,
+                    right: 12,
                     child: _LandlordStatusChip(
-                      icon: Icons.school_outlined,
-                      label: dormitory.proximityLabel!,
-                      foreground: AppTheme.primaryContainer,
+                      icon: !isAvailable ? Icons.cancel_outlined : Icons.circle,
+                      label: status,
+                      foreground: !isAvailable
+                          ? AppTheme.error
+                          : dormitory.status.toLowerCase() == 'approved'
+                          ? AppTheme.secondary
+                          : AppTheme.tertiaryContainer,
                     ),
                   ),
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: _LandlordStatusChip(
-                    icon: !isAvailable
-                        ? Icons.cancel_outlined
-                        : Icons.circle,
-                    label: status,
-                    foreground: !isAvailable
-                        ? AppTheme.error
-                        : dormitory.status.toLowerCase() == 'approved'
-                        ? AppTheme.secondary
-                        : AppTheme.tertiaryContainer,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  dormitory.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    dormitory.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700, height: 1.2),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on_outlined,
-                      size: 16,
-                      color: AppTheme.outline,
-                    ),
-                    const SizedBox(width: 3),
-                    Expanded(
-                      child: Text(
-                        dormitory.address,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  const SizedBox(height: 4),
+                  Row(
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'MONTHLY RENT',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
-                                    color: AppTheme.onSurfaceVariant,
-                                  ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text.rich(
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: _formatPrice(dormitory.monthlyPrice),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          color: AppTheme.primaryContainer,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                  ),
-                                  TextSpan(
-                                    text: '/mo',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: AppTheme.onSurfaceVariant,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 16,
+                        color: AppTheme.outline,
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              'SLOTS',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
-                                    color: AppTheme.onSurfaceVariant,
-                                  ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${dormitory.availableSlots} Available / '
-                              '${dormitory.totalSlots} Total Slots',
-                              maxLines: 2,
-                              textAlign: TextAlign.end,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
-                                    color: isAvailable
-                                        ? AppTheme.secondary
-                                        : AppTheme.error,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceBright,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isAvailable
-                            ? Icons.check_circle_outline_rounded
-                            : Icons.cancel_outlined,
-                        size: 18,
-                        color: isAvailable
-                            ? AppTheme.secondary
-                            : AppTheme.outline,
-                      ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 3),
                       Expanded(
                         child: Text(
-                          isAvailable ? 'Available' : 'Full',
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(
-                                color: isAvailable
-                                    ? AppTheme.onSurface
-                                    : AppTheme.onSurfaceVariant,
-                              ),
+                          dormitory.address,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppTheme.onSurfaceVariant),
                         ),
                       ),
-                      if (_isUpdatingAvailability)
-                        const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      else
-                        Switch(
-                          value: isAvailable,
-                          onChanged: _toggleAvailability,
-                          activeThumbColor: AppTheme.surfaceContainerLowest,
-                          activeTrackColor: AppTheme.secondary,
-                          inactiveThumbColor: AppTheme.surfaceContainerLowest,
-                          inactiveTrackColor: AppTheme.surfaceContainerHighest,
-                        ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: widget.onEdit,
-                        icon: const Icon(Icons.edit_outlined, size: 17),
-                        label: const Text('Edit Property'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.onSurface,
-                          backgroundColor: AppTheme.surfaceContainer,
-                          side: BorderSide.none,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'MONTHLY RENT',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: AppTheme.onSurfaceVariant,
+                                    ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: _formatPrice(
+                                        dormitory.monthlyPrice,
+                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            color: AppTheme.primaryContainer,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                    ),
+                                    TextSpan(
+                                      text: '/mo',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: AppTheme.onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'SLOTS',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: AppTheme.onSurfaceVariant,
+                                    ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${dormitory.availableSlots} Available / '
+                                '${dormitory.totalSlots} Total Slots',
+                                maxLines: 2,
+                                textAlign: TextAlign.end,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: isAvailable
+                                          ? AppTheme.secondary
+                                          : AppTheme.error,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceBright,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isAvailable
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.cancel_outlined,
+                          size: 18,
+                          color: isAvailable
+                              ? AppTheme.secondary
+                              : AppTheme.outline,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            isAvailable ? 'Available' : 'Full',
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: isAvailable
+                                      ? AppTheme.onSurface
+                                      : AppTheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ),
+                        if (_isUpdatingAvailability)
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        else
+                          Switch(
+                            value: isAvailable,
+                            onChanged: _toggleAvailability,
+                            activeThumbColor: AppTheme.surfaceContainerLowest,
+                            activeTrackColor: AppTheme.secondary,
+                            inactiveThumbColor: AppTheme.surfaceContainerLowest,
+                            inactiveTrackColor:
+                                AppTheme.surfaceContainerHighest,
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: widget.onEdit,
+                          icon: const Icon(Icons.edit_outlined, size: 17),
+                          label: const Text('Edit Property'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.onSurface,
+                            backgroundColor: AppTheme.surfaceContainer,
+                            side: BorderSide.none,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: const Size(0, 40),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        onPressed: widget.onDelete,
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 17,
+                        ),
+                        label: const Text('Delete'),
+                        style: FilledButton.styleFrom(
+                          foregroundColor: AppTheme.onErrorContainer,
+                          backgroundColor: AppTheme.errorContainer,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           minimumSize: const Size(0, 40),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton.icon(
-                      onPressed: widget.onDelete,
-                      icon: const Icon(Icons.delete_outline_rounded, size: 17),
-                      label: const Text('Delete'),
-                      style: FilledButton.styleFrom(
-                        foregroundColor: AppTheme.onErrorContainer,
-                        backgroundColor: AppTheme.errorContainer,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        minimumSize: const Size(0, 40),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
           ],
         ),
       ),
@@ -878,10 +911,8 @@ class _LandlordStatusChip extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: foreground, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -915,9 +946,9 @@ class _DashboardHeader extends StatelessWidget {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
+              shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.apartment_rounded,
@@ -952,9 +983,8 @@ class _DashboardHeader extends StatelessWidget {
           if (isLandlord)
             Text(
               'My Listings',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
         ],
       ),
@@ -966,6 +996,7 @@ class _DormitoryCard extends StatelessWidget {
   const _DormitoryCard({
     required this.dormitory,
     required this.isLandlord,
+    required this.showFavorite,
     required this.isFavorite,
     required this.onFavorite,
     required this.onTap,
@@ -973,6 +1004,7 @@ class _DormitoryCard extends StatelessWidget {
 
   final Dormitory dormitory;
   final bool isLandlord;
+  final bool showFavorite;
   final bool isFavorite;
   final VoidCallback onFavorite;
   final VoidCallback onTap;
@@ -1006,7 +1038,7 @@ class _DormitoryCard extends StatelessWidget {
                               const _DormitoryPhotoPlaceholder(),
                         ),
                 ),
-                if (!isLandlord)
+                if (showFavorite)
                   Positioned(
                     top: 8,
                     right: 8,
@@ -1148,8 +1180,7 @@ class _DormitoryCard extends StatelessWidget {
                           size: 14,
                         ),
                         Text(
-                          dormitory.averageRating?.toStringAsFixed(1) ??
-                              'New',
+                          dormitory.averageRating?.toStringAsFixed(1) ?? 'New',
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: dormitory.averageRating == null
@@ -1321,8 +1352,8 @@ class _LandlordNavigationBar extends StatelessWidget {
       selectedIndex: selectedIndex,
       onSelected: onSelected,
       destinations: const [
+        (Icons.home_outlined, 'Home'),
         (Icons.apartment_outlined, 'My Listings'),
-        (Icons.add_home_work_outlined, 'Add Dorm'),
         (Icons.person_outline_rounded, 'Profile'),
       ],
     );

@@ -127,23 +127,42 @@ class _LandlordDormitoryDetailsScreenState
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.warning_amber_rounded),
+        iconColor: AppTheme.error,
+        iconPadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
         title: const Text('Delete Dormitory Listing?'),
+        titlePadding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
         content: Text(
           'Are you sure you want to delete "${_dormitory.name}"? '
           'This action cannot be undone.',
         ),
+        contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.error,
-              foregroundColor: AppTheme.onError,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Yes, Delete Listing'),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    backgroundColor: AppTheme.error,
+                    foregroundColor: AppTheme.onError,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Delete'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -176,9 +195,8 @@ class _LandlordDormitoryDetailsScreenState
         ),
         title: Text(
           'Dormitory Details',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppTheme.surface.withValues(alpha: 0.96),
         surfaceTintColor: Colors.transparent,
@@ -217,8 +235,9 @@ class _LandlordDormitoryDetailsScreenState
                     style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
                       elevation: 2,
-                      shadowColor:
-                          AppTheme.primaryContainer.withValues(alpha: 0.2),
+                      shadowColor: AppTheme.primaryContainer.withValues(
+                        alpha: 0.2,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -285,10 +304,8 @@ class _LandlordDormitoryDetailsScreenState
           ),
           child: Text(
             label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w700,
-            ),
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: color, fontWeight: FontWeight.w700),
           ),
         ),
       ],
@@ -410,12 +427,11 @@ class _LandlordDormitoryDetailsScreenState
                       child: Image.network(
                         photos[index],
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(
-                              color: AppTheme.surfaceContainer,
-                              alignment: Alignment.center,
-                              child: const Icon(Icons.broken_image_outlined),
-                            ),
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: AppTheme.surfaceContainer,
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.broken_image_outlined),
+                        ),
                       ),
                     ),
                   ),
@@ -449,15 +465,13 @@ class _LandlordDormitoryDetailsScreenState
                   children: [
                     Text(
                       'Availability Status',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     Text(
                       'Manage room availability',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.onSurfaceVariant,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: AppTheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -525,9 +539,8 @@ class _LandlordDormitoryDetailsScreenState
             ),
             child: Text(
               'Full dormitories remain visible to seekers and show as full.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.onSurfaceVariant,
-              ),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: AppTheme.onSurfaceVariant),
             ),
           ),
         ],
@@ -546,10 +559,8 @@ class _LandlordDormitoryDetailsScreenState
         children: [
           Text(
             _dormitory.name,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
-            ),
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.3),
           ),
           const SizedBox(height: 6),
           Row(
@@ -566,9 +577,8 @@ class _LandlordDormitoryDetailsScreenState
                   _dormitory.address.isEmpty
                       ? 'Address not provided'
                       : _dormitory.address,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.onSurfaceVariant,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: AppTheme.onSurfaceVariant),
                 ),
               ),
             ],
@@ -642,11 +652,11 @@ class _LandlordDormitoryDetailsScreenState
           _sectionTitle(Icons.description_outlined, 'About the Property'),
           const SizedBox(height: 8),
           Text(
-            description.isEmpty ? 'No property description provided.' : description,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.onSurfaceVariant,
-              height: 1.5,
-            ),
+            description.isEmpty
+                ? 'No property description provided.'
+                : description,
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: AppTheme.onSurfaceVariant, height: 1.5),
           ),
         ],
       ),
@@ -654,9 +664,7 @@ class _LandlordDormitoryDetailsScreenState
   }
 
   Widget _amenitiesCard() {
-    final selected = _dormitory.amenities
-        .map(_canonicalAmenity)
-        .toSet();
+    final selected = _dormitory.amenities.map(_canonicalAmenity).toSet();
     return _sectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -671,9 +679,8 @@ class _LandlordDormitoryDetailsScreenState
               ),
               Text(
                 '${selected.intersection(_amenityOptions.map((item) => item.$1).toSet()).length} of ${_amenityOptions.length} active',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppTheme.onSurfaceVariant,
-                ),
+                style: Theme.of(context).textTheme.labelSmall
+                    ?.copyWith(color: AppTheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -734,9 +741,8 @@ class _LandlordDormitoryDetailsScreenState
                     Text(
                       'No map coordinates are saved for this listing.',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.onSurfaceVariant,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: AppTheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -800,9 +806,8 @@ class _LandlordDormitoryDetailsScreenState
                   Expanded(
                     child: Text(
                       _dormitory.address,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.onSurfaceVariant,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: AppTheme.onSurfaceVariant),
                     ),
                   ),
                 ],
@@ -837,9 +842,8 @@ class _LandlordDormitoryDetailsScreenState
       Expanded(
         child: Text(
           title,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
       ),
     ],
@@ -880,18 +884,15 @@ class _LandlordDormitoryDetailsScreenState
         const SizedBox(height: 5),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(color: color, fontWeight: FontWeight.w700),
         ),
         if (subtitle.isNotEmpty) ...[
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.onSurfaceVariant,
-            ),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: AppTheme.onSurfaceVariant),
           ),
         ],
       ],
@@ -932,10 +933,7 @@ class _LandlordDormitoryDetailsScreenState
   );
 
   String _canonicalAmenity(String value) {
-    final normalized = value.toLowerCase().replaceAll(
-      RegExp(r'[^a-z0-9]'),
-      '',
-    );
+    final normalized = value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
     return switch (normalized) {
       'wifi' || 'wififiber' => 'wifi',
       'owncr' || 'bathroom' => 'own_cr',
@@ -1014,10 +1012,7 @@ class _AvailableSlotsDialogState extends State<_AvailableSlotsDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        FilledButton(
-          onPressed: _save,
-          child: const Text('Save'),
-        ),
+        FilledButton(onPressed: _save, child: const Text('Save')),
       ],
     );
   }

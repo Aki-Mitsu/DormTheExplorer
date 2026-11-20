@@ -22,11 +22,17 @@ class DormDetailsScreen extends StatefulWidget {
     required this.dormitory,
     this.canEditLocation = false,
     this.canReview = true,
+    this.canBookmark = true,
+    this.isFavorite = false,
+    this.onFavoriteChanged,
   });
 
   final Dormitory dormitory;
   final bool canEditLocation;
   final bool canReview;
+  final bool canBookmark;
+  final bool isFavorite;
+  final ValueChanged<bool>? onFavoriteChanged;
 
   @override
   State<DormDetailsScreen> createState() => _DormDetailsScreenState();
@@ -48,8 +54,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   bool _submittingReview = false;
 
   bool get _hasLocation =>
-      widget.dormitory.latitude != null &&
-      widget.dormitory.longitude != null;
+      widget.dormitory.latitude != null && widget.dormitory.longitude != null;
   bool get _previewingLocation => !_hasLocation;
 
   String get _dormName {
@@ -62,6 +67,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    _bookmarked = widget.isFavorite;
     _dormLocation = _hasLocation
         ? LatLng(widget.dormitory.latitude!, widget.dormitory.longitude!)
         : _previewLocation;
@@ -77,10 +83,8 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _loadRoute() => _viewModel.loadRoute(
-    origin: _dormLocation,
-    destination: _destination,
-  );
+  Future<void> _loadRoute() =>
+      _viewModel.loadRoute(origin: _dormLocation, destination: _destination);
 
   @override
   void dispose() {
@@ -105,19 +109,28 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
         ),
         actions: [
-          IconButton(
-            tooltip: _bookmarked ? 'Remove bookmark' : 'Bookmark',
-            onPressed: () => setState(() => _bookmarked = !_bookmarked),
-            icon: Icon(
-              _bookmarked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              color: _bookmarked ? AppTheme.primaryContainer : null,
+          if (widget.canBookmark)
+            IconButton(
+              tooltip: _bookmarked ? 'Remove bookmark' : 'Bookmark',
+              onPressed: () {
+                final isFavorite = !_bookmarked;
+                setState(() => _bookmarked = isFavorite);
+                widget.onFavoriteChanged?.call(isFavorite);
+              },
+              icon: Icon(
+                _bookmarked
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                color: _bookmarked ? AppTheme.primaryContainer : null,
+              ),
             ),
-          ),
         ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final width = constraints.maxWidth > 792 ? 760.0 : constraints.maxWidth;
+          final width = constraints.maxWidth > 792
+              ? 760.0
+              : constraints.maxWidth;
           return SingleChildScrollView(
             controller: _scrollController,
             padding: const EdgeInsets.only(bottom: 20),
@@ -205,9 +218,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                   Positioned(
                     top: 12,
                     right: 12,
-                    child: _Tag(
-                      label: '${_photoIndex + 1} / $count',
-                    ),
+                    child: _Tag(label: '${_photoIndex + 1} / $count'),
                   ),
                 ],
               ),
@@ -268,20 +279,23 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         children: [
           Text(
             _dormName,
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.4,
-            ),
+            style: Theme.of(context).textTheme.headlineLarge
+                ?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.4),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.location_on_rounded,
-                  size: 18, color: AppTheme.primaryContainer),
+              const Icon(
+                Icons.location_on_rounded,
+                size: 18,
+                color: AppTheme.primaryContainer,
+              ),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  address.isEmpty ? 'Address will be added by the landlord' : address,
+                  address.isEmpty
+                      ? 'Address will be added by the landlord'
+                      : address,
                   style: Theme.of(context).textTheme.bodySmall
                       ?.copyWith(color: AppTheme.onSurfaceVariant),
                 ),
@@ -297,8 +311,11 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.star_rounded,
-                    color: AppTheme.tertiaryAccent, size: 22),
+                const Icon(
+                  Icons.star_rounded,
+                  color: AppTheme.tertiaryAccent,
+                  size: 22,
+                ),
                 const SizedBox(width: 5),
                 Text(
                   _viewModel.averageRating.toStringAsFixed(1),
@@ -383,11 +400,13 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         : Wrap(
             spacing: 8,
             children: widget.dormitory.roomTypes
-                .map((room) => Chip(
-                      avatar: const Icon(Icons.bed_outlined, size: 17),
-                      label: Text(room),
-                      backgroundColor: AppTheme.surfaceContainerLow,
-                    ))
+                .map(
+                  (room) => Chip(
+                    avatar: const Icon(Icons.bed_outlined, size: 17),
+                    label: Text(room),
+                    backgroundColor: AppTheme.surfaceContainerLow,
+                  ),
+                )
                 .toList(growable: false),
           ),
   );
@@ -401,8 +420,9 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
       ('Laundry', Icons.local_laundry_service_outlined),
       ('Parking', Icons.local_parking_rounded),
     ];
-    final amenities =
-        widget.dormitory.amenities.map((value) => value.toLowerCase()).toSet();
+    final amenities = widget.dormitory.amenities
+        .map((value) => value.toLowerCase())
+        .toSet();
 
     return _section(
       'Amenities Overview',
@@ -427,8 +447,11 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
             ),
             child: Row(
               children: [
-                Icon(icon, size: 19,
-                    color: available ? AppTheme.secondary : AppTheme.outline),
+                Icon(
+                  icon,
+                  size: 19,
+                  color: available ? AppTheme.secondary : AppTheme.outline,
+                ),
                 const SizedBox(width: 7),
                 Expanded(
                   child: Text(
@@ -471,10 +494,8 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
           description.isEmpty
               ? 'The landlord has not added a description yet.'
               : description,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.onSurfaceVariant,
-            height: 1.55,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: AppTheme.onSurfaceVariant, height: 1.55),
         ),
       ),
     );
@@ -568,13 +589,18 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
             decoration: const InputDecoration(
               labelText: 'Route to',
               prefixIcon: Icon(Icons.school_outlined),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
             ),
             items: RouteDestination.campuses
-                .map((campus) => DropdownMenuItem(
-                      value: campus,
-                      child: Text(campus.name, overflow: TextOverflow.ellipsis),
-                    ))
+                .map(
+                  (campus) => DropdownMenuItem(
+                    value: campus,
+                    child: Text(campus.name, overflow: TextOverflow.ellipsis),
+                  ),
+                )
                 .toList(growable: false),
             onChanged: (value) {
               if (value == null) return;
@@ -631,7 +657,9 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
           const Icon(Icons.route_outlined, color: AppTheme.outline),
           const SizedBox(width: 8),
           const Expanded(
-            child: Text('Could not load route. Check your connection and retry.'),
+            child: Text(
+              'Could not load route. Check your connection and retry.',
+            ),
           ),
           IconButton(
             tooltip: 'Retry route',
@@ -792,7 +820,9 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
 
       if (authorName == null || authorName.isEmpty) {
         if (mounted) {
-          _showMessage('Add your name to your profile before posting a review.');
+          _showMessage(
+            'Add your name to your profile before posting a review.',
+          );
         }
         return;
       }
@@ -835,7 +865,9 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
           children: [
             Expanded(
               child: FilledButton.icon(
-                onPressed: canContact ? () => _launchContact('tel', phone!) : null,
+                onPressed: canContact
+                    ? () => _launchContact('tel', phone!)
+                    : null,
                 style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
                 icon: const Icon(Icons.call_rounded, size: 18),
                 label: const Text('Call'),
@@ -844,7 +876,9 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: FilledButton.icon(
-                onPressed: canContact ? () => _launchContact('sms', phone!) : null,
+                onPressed: canContact
+                    ? () => _launchContact('sms', phone!)
+                    : null,
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(0, 48),
                   backgroundColor: AppTheme.surfaceContainer,
@@ -992,8 +1026,11 @@ class _PhotoPlaceholder extends StatelessWidget {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.apartment_rounded,
-            size: compact ? 23 : 58, color: AppTheme.outline),
+        Icon(
+          Icons.apartment_rounded,
+          size: compact ? 23 : 58,
+          color: AppTheme.outline,
+        ),
         if (!compact) ...[
           const SizedBox(height: 8),
           Text(
@@ -1111,79 +1148,81 @@ class _ReviewCard extends StatelessWidget {
     final photoUrl = review.authorPhotoUrl?.trim();
 
     return Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppTheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(18),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 17,
-              backgroundColor: AppTheme.primaryFixed,
-              child: photoUrl == null || photoUrl.isEmpty
-                  ? _avatarInitials(initials)
-                  : ClipOval(
-                      child: Image.network(
-                        photoUrl,
-                        width: 34,
-                        height: 34,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _avatarInitials(initials),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 17,
+                backgroundColor: AppTheme.primaryFixed,
+                child: photoUrl == null || photoUrl.isEmpty
+                    ? _avatarInitials(initials)
+                    : ClipOval(
+                        child: Image.network(
+                          photoUrl,
+                          width: 34,
+                          height: 34,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _avatarInitials(initials),
+                        ),
                       ),
-                    ),
-            ),
-            const SizedBox(width: 9),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(review.authorName,
-                      style: Theme.of(context).textTheme.labelMedium),
-                  Text(
-                    review.authorSubtitle,
-                    style: Theme.of(context).textTheme.labelSmall
-                        ?.copyWith(color: AppTheme.onSurfaceVariant),
-                  ),
-                ],
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(
-                5,
-                (index) => Icon(
-                  index < review.rating
-                      ? Icons.star_rounded
-                      : Icons.star_border_rounded,
-                  color: AppTheme.tertiaryAccent,
-                  size: 15,
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      review.authorName,
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    Text(
+                      review.authorSubtitle,
+                      style: Theme.of(context).textTheme.labelSmall
+                          ?.copyWith(color: AppTheme.onSurfaceVariant),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Text(
-          review.comment,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.onSurfaceVariant,
-            fontStyle: FontStyle.italic,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(
+                  5,
+                  (index) => Icon(
+                    index < review.rating
+                        ? Icons.star_rounded
+                        : Icons.star_border_rounded,
+                    color: AppTheme.tertiaryAccent,
+                    size: 15,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          review.stayLabel,
-          style: Theme.of(context).textTheme.labelSmall
-              ?.copyWith(color: AppTheme.onSurfaceVariant),
-        ),
-      ],
-    ),
+          const SizedBox(height: 10),
+          Text(
+            review.comment,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppTheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            review.stayLabel,
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: AppTheme.onSurfaceVariant),
+          ),
+        ],
+      ),
     );
   }
 

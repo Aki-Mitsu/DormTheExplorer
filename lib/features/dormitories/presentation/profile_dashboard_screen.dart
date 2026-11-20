@@ -43,9 +43,7 @@ class ProfileDashboardScreen extends StatelessWidget {
         final role = (data['role'] as String?) ?? accountRole;
         final isLandlord = role == 'landlord';
         final verified = user?.emailVerified ?? false;
-        final roleLabel = isLandlord
-            ? 'Landlord'
-            : 'Seeker (Student Account)';
+        final roleLabel = isLandlord ? 'Landlord' : 'Seeker (Student Account)';
         final tier = isLandlord
             ? 'Landlord'
             : 'Seeker (Student / Professional)';
@@ -279,17 +277,36 @@ class ProfileDashboardScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Log out?'),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
         content: const Text(
           'Are you sure you want to log out of DormTheExplorer?',
         ),
+        contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Log out'),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('Log out'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -338,8 +355,11 @@ class _ProfileHeader extends StatelessWidget {
             children: [
               Text(
                 'DormTheExplorer',
-                style: Theme.of(context).textTheme.labelSmall
-                    ?.copyWith(color: AppTheme.primaryDeep, letterSpacing: 1),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppTheme.primaryContainer,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
               ),
               Text('Profile', style: Theme.of(context).textTheme.titleMedium),
             ],

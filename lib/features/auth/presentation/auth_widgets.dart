@@ -2,11 +2,7 @@ import 'package:dorm_the_explorer/theme/app_theme.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AuthPageHeader extends StatelessWidget {
-  const AuthPageHeader({
-    super.key,
-    required this.title,
-    this.onBack,
-  });
+  const AuthPageHeader({super.key, required this.title, this.onBack});
 
   final String title;
   final VoidCallback? onBack;
@@ -36,9 +32,7 @@ class AuthPageHeader extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
+            style: Theme.of(context).textTheme.titleMedium
                 ?.copyWith(color: AppTheme.onSurface),
           ),
         ],
@@ -69,13 +63,19 @@ class AuthBrandHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, compact ? 12 : 20, 16, compact ? 12 : 24),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        compact ? 12 : 20,
+        16,
+        compact ? 12 : 24,
+      ),
       child: Column(
         children: [
           Container(
             width: logoSize + 16,
             height: logoSize + 16,
             padding: const EdgeInsets.all(8),
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: AppTheme.surfaceContainerLow,
               shape: BoxShape.circle,
@@ -123,13 +123,10 @@ class AuthBrandHeader extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     'SEEKER & LANDLORD PORTAL',
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelSmall
-                        ?.copyWith(
-                          color: AppTheme.onPrimaryFixedVariant,
-                          letterSpacing: 0.5,
-                        ),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppTheme.onPrimaryFixedVariant,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ],
               ),
@@ -139,10 +136,11 @@ class AuthBrandHeader extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: (compact
-                    ? Theme.of(context).textTheme.headlineMedium
-                    : Theme.of(context).textTheme.headlineLarge)
-                ?.copyWith(color: AppTheme.onSurface),
+            style:
+                (compact
+                        ? Theme.of(context).textTheme.headlineMedium
+                        : Theme.of(context).textTheme.headlineLarge)
+                    ?.copyWith(color: AppTheme.onSurface),
           ),
           const SizedBox(height: 4),
           ConstrainedBox(
@@ -150,10 +148,11 @@ class AuthBrandHeader extends StatelessWidget {
             child: Text(
               description,
               textAlign: TextAlign.center,
-              style: (compact
-                      ? Theme.of(context).textTheme.bodySmall
-                      : Theme.of(context).textTheme.bodyMedium)
-                  ?.copyWith(color: AppTheme.onSurfaceVariant),
+              style:
+                  (compact
+                          ? Theme.of(context).textTheme.bodySmall
+                          : Theme.of(context).textTheme.bodyMedium)
+                      ?.copyWith(color: AppTheme.onSurfaceVariant),
             ),
           ),
         ],
@@ -203,11 +202,7 @@ class AuthFormCard extends StatelessWidget {
 }
 
 class AuthFieldLabel extends StatelessWidget {
-  const AuthFieldLabel({
-    super.key,
-    required this.text,
-    this.trailing,
-  });
+  const AuthFieldLabel({super.key, required this.text, this.trailing});
 
   final String text;
   final String? trailing;
@@ -219,21 +214,16 @@ class AuthFieldLabel extends StatelessWidget {
       children: [
         Text(
           text,
-          style: Theme.of(context)
-              .textTheme
-              .labelMedium
+          style: Theme.of(context).textTheme.labelMedium
               ?.copyWith(color: AppTheme.onSurfaceVariant),
         ),
         if (trailing != null)
           Text(
             trailing!,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall
-                ?.copyWith(
-                  color: AppTheme.onSurfaceVariant.withValues(alpha: 0.7),
-                  fontWeight: FontWeight.w400,
-                ),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AppTheme.onSurfaceVariant.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w400,
+            ),
           ),
       ],
     );
@@ -248,9 +238,8 @@ InputDecoration authInputDecoration(
 }) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppTheme.onSurfaceVariant.withValues(alpha: 0.38),
-        ),
+    hintStyle: Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(color: AppTheme.onSurfaceVariant.withValues(alpha: 0.38)),
     prefixIcon: Icon(
       icon,
       color: AppTheme.onSurfaceVariant.withValues(alpha: 0.75),
