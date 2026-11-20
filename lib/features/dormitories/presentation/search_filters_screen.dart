@@ -325,8 +325,10 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
     ),
     child: LayoutBuilder(
       builder: (context, constraints) {
-        const columns = 2;
-        final width = (constraints.maxWidth - 8) / columns;
+        final columns = constraints.maxWidth < 360 ? 1 : 2;
+        final width = columns == 1
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 8) / columns;
         const amenities = <(String, String, IconData)>[
           ('wifi', 'WiFi', Icons.wifi_rounded),
           ('own_cr', 'Own CR', Icons.shower_outlined),
