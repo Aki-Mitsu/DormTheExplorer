@@ -57,7 +57,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - "UI-DORM-THE-EXPLORER/Dorm the Explorer — Terms and Conditions and Privacy Policy.md"
+    - "lib/features/auth/presentation/Dorm the Explorer — Terms and Conditions and Privacy Policy.md"
 
   # To add assets to your application, add an assets section, like this:
   # assets:

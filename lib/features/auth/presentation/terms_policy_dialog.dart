@@ -20,7 +20,7 @@ class _TermsPolicyDialog extends StatefulWidget {
 
 class _TermsPolicyDialogState extends State<_TermsPolicyDialog> {
   static const _assetPath =
-      'UI-DORM-THE-EXPLORER/Dorm the Explorer — Terms and Conditions and Privacy Policy.md';
+      'lib/features/auth/presentation/Dorm the Explorer — Terms and Conditions and Privacy Policy.md';
 
   final ScrollController _scrollController = ScrollController();
   String? _document;
