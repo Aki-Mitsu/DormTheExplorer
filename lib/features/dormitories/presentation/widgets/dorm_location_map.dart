@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../theme/app_theme.dart';
 
-class DormLocationMap extends StatelessWidget {
+class DormLocationMap extends StatefulWidget {
   const DormLocationMap({
     super.key,
     required this.dormLocation,
@@ -24,6 +24,24 @@ class DormLocationMap extends StatelessWidget {
   final VoidCallback? onDormMarkerTap;
 
   @override
+  State<DormLocationMap> createState() => _DormLocationMapState();
+}
+
+class _DormLocationMapState extends State<DormLocationMap> {
+  late final NetworkTileProvider _tileProvider = NetworkTileProvider(
+    headers: {
+      'User-Agent':
+          'DormTheExplorer/1.0 (https://github.com/shirokase/Dorm-the-Explorer)',
+    },
+  );
+
+  @override
+  void dispose() {
+    _tileProvider.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
@@ -32,27 +50,37 @@ class DormLocationMap extends StatelessWidget {
         child: Stack(
           children: [
             FlutterMap(
-              key: ObjectKey(routePoints),
               options: MapOptions(
-                initialCenter: routePoints.isEmpty
-                    ? dormLocation
-                    : routePoints[routePoints.length ~/ 2],
-                initialZoom: 13,
-                onTap: onMapTap == null
+                initialCameraFit: CameraFit.coordinates(
+                  coordinates: [
+                    widget.dormLocation,
+                    widget.destination,
+                    ...widget.routePoints,
+                  ],
+                  padding: const EdgeInsets.all(40),
+                  maxZoom: 16,
+                ),
+                onTap: widget.onMapTap == null
                     ? null
-                    : (tapPosition, point) => onMapTap!(point),
+                    : (tapPosition, point) => widget.onMapTap!(point),
               ),
               children: [
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  tileProvider: _tileProvider,
                   userAgentPackageName: 'dormtheexplorer.app.dorm_the_explorer',
                   maxNativeZoom: 19,
+                  evictErrorTileStrategy:
+                      EvictErrorTileStrategy.notVisibleRespectMargin,
+                  errorTileCallback: (tile, error, stackTrace) {
+                    debugPrint('OpenStreetMap tile failed: $error');
+                  },
                 ),
-                if (routePoints.length > 1)
+                if (widget.routePoints.length > 1)
                   PolylineLayer(
                     polylines: [
                       Polyline(
-                        points: routePoints,
+                        points: widget.routePoints,
                         strokeWidth: 4,
                         color: AppTheme.primaryContainer,
                       ),
@@ -61,11 +89,11 @@ class DormLocationMap extends StatelessWidget {
                 MarkerLayer(
                   markers: [
                     Marker(
-                      point: dormLocation,
+                      point: widget.dormLocation,
                       width: 52,
                       height: 58,
                       child: GestureDetector(
-                        onTap: onDormMarkerTap,
+                        onTap: widget.onDormMarkerTap,
                         child: const Icon(
                           Icons.location_on_rounded,
                           color: AppTheme.primaryContainer,
@@ -74,7 +102,7 @@ class DormLocationMap extends StatelessWidget {
                       ),
                     ),
                     Marker(
-                      point: destination,
+                      point: widget.destination,
                       width: 44,
                       height: 48,
                       child: const Icon(
@@ -120,7 +148,7 @@ class DormLocationMap extends StatelessWidget {
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        dormLabel,
+                        widget.dormLabel,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.labelSmall,
