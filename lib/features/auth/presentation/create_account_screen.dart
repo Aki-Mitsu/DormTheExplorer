@@ -2,6 +2,7 @@ import 'package:dorm_the_explorer/theme/app_theme.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'auth_widgets.dart';
+import 'terms_policy_dialog.dart';
 import '../../../services/auth_service.dart';
 
 typedef CreateAccountCallback = void Function({
@@ -44,6 +45,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _reviewTerms() async {
+    final accepted = await showTermsPolicyDialog(context);
+    if (!mounted) return;
+    setState(() {
+      _acceptedTerms = accepted == true;
+      if (_acceptedTerms) _showTermsError = false;
+    });
   }
 
   Future<void> _submit() async {
@@ -316,45 +326,57 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 height: 24,
                                 child: Checkbox(
                                   value: _acceptedTerms,
-                                  onChanged: (value) => setState(() {
-                                    _acceptedTerms = value ?? false;
-                                    _showTermsError = false;
-                                  }),
+                                  onChanged: (value) {
+                                    if (value == true) {
+                                      _reviewTerms();
+                                    } else {
+                                      setState(() {
+                                        _acceptedTerms = false;
+                                        _showTermsError = false;
+                                      });
+                                    }
+                                  },
                                   activeColor: AppTheme.primaryContainer,
                                   visualDensity: VisualDensity.compact,
                                 ),
                               ),
                               const SizedBox(width: 4),
                               Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 3),
-                                  child: Text.rich(
-                                    TextSpan(
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: AppTheme.onSurfaceVariant,
+                                child: InkWell(
+                                  onTap: _reviewTerms,
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 3),
+                                    child: Text.rich(
+                                      TextSpan(
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: AppTheme.onSurfaceVariant,
+                                            ),
+                                        children: const [
+                                          TextSpan(
+                                            text: 'I have read and agree to the ',
                                           ),
-                                      children: const [
-                                        TextSpan(text: 'I agree to the '),
-                                        TextSpan(
-                                          text: 'Terms and Conditions',
-                                          style: TextStyle(
-                                            color: AppTheme.primaryContainer,
-                                            fontWeight: FontWeight.w600,
+                                          TextSpan(
+                                            text: 'Terms and Conditions',
+                                            style: TextStyle(
+                                              color: AppTheme.primaryContainer,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
-                                        ),
-                                        TextSpan(text: ' and '),
-                                        TextSpan(
-                                          text: 'Privacy Policy',
-                                          style: TextStyle(
-                                            color: AppTheme.primaryContainer,
-                                            fontWeight: FontWeight.w600,
+                                          TextSpan(text: ' and the '),
+                                          TextSpan(
+                                            text: 'Privacy Policy',
+                                            style: TextStyle(
+                                              color: AppTheme.primaryContainer,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
-                                        ),
-                                        TextSpan(text: '.'),
-                                      ],
+                                          TextSpan(text: '.'),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
