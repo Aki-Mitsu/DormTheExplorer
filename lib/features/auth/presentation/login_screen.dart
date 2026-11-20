@@ -204,49 +204,45 @@ class _LoginScreenState extends State<LoginScreen> {
                                           : null,
                                     ),
                                     const SizedBox(height: 8),
-                                    Row(
+                                    Wrap(
+                                      alignment: WrapAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      runSpacing: 2,
                                       children: [
-                                        Expanded(
-                                          child: Row(
-                                            children: [
-                                              Checkbox(
-                                                value: _rememberMe,
-                                                onChanged: (value) => setState(
-                                                  () => _rememberMe =
-                                                      value ?? false,
-                                                ),
-                                                visualDensity:
-                                                    VisualDensity.compact,
-                                                activeColor:
-                                                    AppTheme.primaryContainer,
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Checkbox(
+                                              value: _rememberMe,
+                                              onChanged: (value) => setState(
+                                                () => _rememberMe = value ?? false,
                                               ),
-                                              const SizedBox(width: 2),
-                                              Flexible(
-                                                child: Text(
-                                                  'Remember me',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall
-                                                      ?.copyWith(
-                                                        color: AppTheme
-                                                            .onSurfaceVariant,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                              visualDensity: VisualDensity.compact,
+                                              activeColor: AppTheme.primaryContainer,
+                                            ),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              'Remember me',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: AppTheme.onSurfaceVariant,
+                                                  ),
+                                            ),
+                                          ],
                                         ),
                                         TextButton(
                                           onPressed: _isSendingReset
                                               ? null
                                               : _sendPasswordReset,
                                           style: TextButton.styleFrom(
-                                            foregroundColor:
-                                                AppTheme.primaryContainer,
+                                            foregroundColor: AppTheme.primaryContainer,
                                             padding: EdgeInsets.zero,
                                             minimumSize: const Size(0, 40),
-                                            tapTargetSize: MaterialTapTargetSize
-                                                .shrinkWrap,
+                                            tapTargetSize:
+                                                MaterialTapTargetSize.shrinkWrap,
                                           ),
                                           child: Text(
                                             'Forgot Password?',
@@ -254,8 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 .textTheme
                                                 .labelMedium
                                                 ?.copyWith(
-                                                  color:
-                                                      AppTheme.primaryContainer,
+                                                  color: AppTheme.primaryContainer,
                                                 ),
                                           ),
                                         ),
