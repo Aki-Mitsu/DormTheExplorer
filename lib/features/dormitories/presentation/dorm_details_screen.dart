@@ -345,49 +345,63 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
               color: AppTheme.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final rentDetails = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MONTHLY RENT',
+                      style: Theme.of(context).textTheme.labelSmall
+                          ?.copyWith(color: AppTheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      dorm.monthlyPrice > 0
+                          ? '${_formatPrice(dorm.monthlyPrice)} / month'
+                          : 'Price not provided',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppTheme.primaryContainer,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      dorm.utilitiesIncluded
+                          ? '✓ Water & electricity included'
+                          : 'Utility details not provided',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: dorm.utilitiesIncluded
+                            ? AppTheme.secondary
+                            : AppTheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                );
+                final availability = _AvailabilityBadge(
+                  available: dorm.availableSlots,
+                  total: dorm.totalSlots,
+                );
+
+                if (constraints.maxWidth < 360) {
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'MONTHLY RENT',
-                        style: Theme.of(context).textTheme.labelSmall
-                            ?.copyWith(color: AppTheme.onSurfaceVariant),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        dorm.monthlyPrice > 0
-                            ? '${_formatPrice(dorm.monthlyPrice)} / month'
-                            : 'Price not provided',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppTheme.primaryContainer,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        dorm.utilitiesIncluded
-                            ? '✓ Water & electricity included'
-                            : 'Utility details not provided',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: dorm.utilitiesIncluded
-                              ? AppTheme.secondary
-                              : AppTheme.onSurfaceVariant,
-                        ),
-                      ),
+                      rentDetails,
+                      const SizedBox(height: 10),
+                      availability,
                     ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: _AvailabilityBadge(
-                    available: dorm.availableSlots,
-                    total: dorm.totalSlots,
-                  ),
-                ),
-              ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(child: rentDetails),
+                    const SizedBox(width: 8),
+                    Flexible(child: availability),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -435,8 +449,8 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: options.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: MediaQuery.sizeOf(context).width < 400 ? 1 : 2,
           mainAxisExtent: 62,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
@@ -709,30 +723,66 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         color: AppTheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.alt_route_rounded, color: AppTheme.primaryContainer),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'To ${_destination.name}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
-          ),
-          Text(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final destination = Text(
+            'To ${_destination.name}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+          final distance = Text(
             route.distanceLabel,
             style: Theme.of(context).textTheme.labelMedium
                 ?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(width: 10),
-          Text(
+          );
+          final duration = Text(
             route.durationLabel,
             style: Theme.of(context).textTheme.labelSmall
                 ?.copyWith(color: AppTheme.onSurfaceVariant),
-          ),
-        ],
+          );
+
+          if (constraints.maxWidth < 360) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.alt_route_rounded,
+                      color: AppTheme.primaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: destination),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const SizedBox(width: 32),
+                    distance,
+                    const Spacer(),
+                    duration,
+                  ],
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              const Icon(
+                Icons.alt_route_rounded,
+                color: AppTheme.primaryContainer,
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: destination),
+              distance,
+              const SizedBox(width: 10),
+              duration,
+            ],
+          );
+        },
       ),
     );
   }
