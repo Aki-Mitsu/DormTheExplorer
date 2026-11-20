@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -10,17 +12,29 @@ import '../domain/route_destination.dart';
 class DormDetailsViewModel extends ChangeNotifier {
   DormDetailsViewModel({
     required this.dormitoryId,
-    required DormReviewRepository reviewRepository,
+    required this.reviewRepository,
     required this.routingService,
-  }) : _reviewRepository = reviewRepository,
-       _reviews = reviewRepository.reviewsFor(dormitoryId);
+  }) {
+    _reviewsSubscription = reviewRepository.watchReviews(dormitoryId).listen(
+      (reviews) {
+        _reviews = reviews;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        reviewError = error;
+        notifyListeners();
+      },
+    );
+  }
 
   final String dormitoryId;
-  final DormReviewRepository _reviewRepository;
+  final DormReviewRepository reviewRepository;
   final OsrmRoutingService routingService;
 
-  List<DormReview> _reviews;
+  List<DormReview> _reviews = const [];
   List<DormReview> get reviews => List.unmodifiable(_reviews);
+  late final StreamSubscription<List<DormReview>> _reviewsSubscription;
+  Object? reviewError;
 
   double get averageRating {
     if (_reviews.isEmpty) return 0;
@@ -61,12 +75,14 @@ class DormDetailsViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    unawaited(_reviewsSubscription.cancel());
     routingService.dispose();
     super.dispose();
   }
 
   Future<void> submitReview({
     required String authorName,
+    String? authorPhotoUrl,
     required int rating,
     required String comment,
   }) async {
@@ -74,14 +90,13 @@ class DormDetailsViewModel extends ChangeNotifier {
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       dormitoryId: dormitoryId,
       authorName: authorName,
+      authorPhotoUrl: authorPhotoUrl,
       authorSubtitle: 'Student seeker',
       rating: rating,
       comment: comment,
       stayLabel: 'New review',
       createdAt: DateTime.now(),
     );
-    await _reviewRepository.addReview(review);
-    _reviews = _reviewRepository.reviewsFor(dormitoryId);
-    notifyListeners();
+    await reviewRepository.addReview(review);
   }
 }

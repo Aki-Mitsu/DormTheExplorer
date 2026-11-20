@@ -1,62 +1,53 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../domain/dorm_review.dart';
 
 abstract interface class DormReviewRepository {
-  List<DormReview> reviewsFor(String dormitoryId);
+  Stream<List<DormReview>> watchReviews(String dormitoryId);
 
   Future<void> addReview(DormReview review);
 }
 
-/// In-memory sample source until reviews are connected to Firestore.
-class SampleDormReviewRepository implements DormReviewRepository {
-  static final Map<String, List<DormReview>> _reviewsByDormitory = {};
+class FirestoreDormReviewRepository implements DormReviewRepository {
+  FirestoreDormReviewRepository({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _firestore;
+
+  CollectionReference<Map<String, dynamic>> _reviews(String dormitoryId) =>
+      _firestore
+          .collection('dormitories')
+          .doc(dormitoryId)
+          .collection('reviews');
 
   @override
-  List<DormReview> reviewsFor(String dormitoryId) {
-    return List.unmodifiable(
-      _reviewsByDormitory.putIfAbsent(
-        dormitoryId,
-        () => _sampleReviews(dormitoryId),
-      ),
-    );
+  Stream<List<DormReview>> watchReviews(String dormitoryId) {
+    return _reviews(dormitoryId).snapshots().map((snapshot) {
+      final reviews = snapshot.docs
+          .map((document) => DormReview.fromJson(document.data(), id: document.id))
+          .toList();
+      reviews.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return List.unmodifiable(reviews);
+    });
   }
 
   @override
   Future<void> addReview(DormReview review) async {
-    _reviewsByDormitory
-        .putIfAbsent(review.dormitoryId, () => _sampleReviews(review.dormitoryId))
-        .insert(0, review);
-  }
+    final reviews = _reviews(review.dormitoryId);
+    await reviews.doc(review.id).set(review.toJson());
 
-  List<DormReview> _sampleReviews(String dormitoryId) => [
-    DormReview(
-      id: 'sample-review-1',
-      dormitoryId: dormitoryId,
-      authorName: 'Jamie R.',
-      authorSubtitle: 'Student seeker',
-      rating: 5,
-      comment: 'The location is convenient and the rooms feel comfortable.',
-      stayLabel: 'Stayed 10 months • Shared room',
-      createdAt: DateTime(2026, 3, 18),
-    ),
-    DormReview(
-      id: 'sample-review-2',
-      dormitoryId: dormitoryId,
-      authorName: 'Alex M.',
-      authorSubtitle: 'Student seeker',
-      rating: 5,
-      comment: 'A peaceful place to study, with helpful management.',
-      stayLabel: 'Stayed 1 year • Single room',
-      createdAt: DateTime(2026, 2, 5),
-    ),
-    DormReview(
-      id: 'sample-review-3',
-      dormitoryId: dormitoryId,
-      authorName: 'Sam C.',
-      authorSubtitle: 'Student seeker',
-      rating: 4,
-      comment: 'Good value and close to campus.',
-      stayLabel: 'Stayed 6 months • Shared room',
-      createdAt: DateTime(2026, 1, 22),
-    ),
-  ];
+    final savedReviews = await reviews.get();
+    if (savedReviews.docs.isEmpty) return;
+
+    final totalRating = savedReviews.docs.fold<int>(
+      0,
+      (total, document) =>
+          total + ((document.data()['rating'] as num?)?.toInt() ?? 0),
+    );
+    final averageRating = totalRating / savedReviews.docs.length;
+
+    await _firestore.collection('dormitories').doc(review.dormitoryId).update({
+      'averageRating': averageRating,
+    });
+  }
 }

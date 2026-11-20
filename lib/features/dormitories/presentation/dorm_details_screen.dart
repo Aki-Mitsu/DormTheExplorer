@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -65,7 +67,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         : _previewLocation;
     _viewModel = DormDetailsViewModel(
       dormitoryId: widget.dormitory.id,
-      reviewRepository: SampleDormReviewRepository(),
+      reviewRepository: FirestoreDormReviewRepository(),
       routingService: OsrmRoutingService(),
     )..addListener(_onViewModelChanged);
     unawaited(_loadRoute());
@@ -769,15 +771,44 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
       _showMessage('Write a comment before posting your review.');
       return;
     }
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _showMessage('Sign in to post a review.');
+      return;
+    }
+
     setState(() => _submittingReview = true);
     try {
+      final profile = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final profileName = (profile.data()?['fullName'] as String?)?.trim();
+      final displayName = user.displayName?.trim();
+      final authorName = profileName?.isNotEmpty == true
+          ? profileName!
+          : displayName;
+
+      if (authorName == null || authorName.isEmpty) {
+        if (mounted) {
+          _showMessage('Add your name to your profile before posting a review.');
+        }
+        return;
+      }
+
       await _viewModel.submitReview(
-        authorName: 'Dorm seeker',
+        authorName: authorName,
+        authorPhotoUrl: user.photoURL,
         rating: _selectedRating,
         comment: comment,
       );
       _reviewController.clear();
-      if (mounted) _showMessage('Review added for this session.');
+      if (mounted) _showMessage('Review posted successfully.');
+    } on FirebaseException catch (error) {
+      if (mounted) {
+        _showMessage(error.message ?? 'Could not load your profile name.');
+      }
     } finally {
       if (mounted) setState(() => _submittingReview = false);
     }
@@ -1074,7 +1105,12 @@ class _ReviewCard extends StatelessWidget {
   final DormReview review;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) {
+    final trimmedName = review.authorName.trim();
+    final initials = trimmedName.isEmpty ? '?' : trimmedName[0].toUpperCase();
+    final photoUrl = review.authorPhotoUrl?.trim();
+
+    return Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
@@ -1089,15 +1125,18 @@ class _ReviewCard extends StatelessWidget {
             CircleAvatar(
               radius: 17,
               backgroundColor: AppTheme.primaryFixed,
-              child: Text(
-                review.authorName.isEmpty
-                    ? '?'
-                    : review.authorName[0].toUpperCase(),
-                style: const TextStyle(
-                  color: AppTheme.primaryContainer,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              child: photoUrl == null || photoUrl.isEmpty
+                  ? _avatarInitials(initials)
+                  : ClipOval(
+                      child: Image.network(
+                        photoUrl,
+                        width: 34,
+                        height: 34,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _avatarInitials(initials),
+                      ),
+                    ),
             ),
             const SizedBox(width: 9),
             Expanded(
@@ -1144,6 +1183,15 @@ class _ReviewCard extends StatelessWidget {
               ?.copyWith(color: AppTheme.onSurfaceVariant),
         ),
       ],
+    ),
+    );
+  }
+
+  Widget _avatarInitials(String initials) => Text(
+    initials,
+    style: const TextStyle(
+      color: AppTheme.primaryContainer,
+      fontWeight: FontWeight.w700,
     ),
   );
 }

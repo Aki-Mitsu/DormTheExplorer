@@ -44,10 +44,10 @@ class ProfileDashboardScreen extends StatelessWidget {
         final isLandlord = role == 'landlord';
         final verified = user?.emailVerified ?? false;
         final roleLabel = isLandlord
-            ? 'Landlord (Verified Host)'
+            ? 'Landlord'
             : 'Seeker (Student Account)';
         final tier = isLandlord
-            ? 'Landlord (Verified Host)'
+            ? 'Landlord'
             : 'Seeker (Student / Professional)';
         final explanation = isLandlord
             ? 'As a Landlord, you can manage your dormitory listings and connect with students looking for accommodation in Batangas City.'
