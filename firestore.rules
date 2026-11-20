@@ -1,0 +1,115 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isLandlord() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid))
+          .data.role == 'landlord';
+    }
+
+    function ownsListing() {
+      return signedIn()
+        && resource.data.landlordId == request.auth.uid;
+    }
+
+    function validAverageRatingUpdate() {
+      return signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['averageRating'])
+        && request.resource.data.averageRating is number
+        && request.resource.data.averageRating >= 0
+        && request.resource.data.averageRating <= 5;
+    }
+
+    match /users/{userId} {
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.role in ['seeker', 'landlord'];
+
+      allow read: if signedIn() && request.auth.uid == userId;
+
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.role == resource.data.role;
+
+      allow delete: if false;
+    }
+
+    match /dormitories/{dormitoryId} {
+      allow get, list: if signedIn()
+        && (resource.data.status == 'approved'
+          || resource.data.landlordId == request.auth.uid);
+
+      allow create: if isLandlord()
+        && request.resource.data.landlordId == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.address is string
+        && request.resource.data.monthlyPrice is number
+        && request.resource.data.totalSlots is int
+        && request.resource.data.availableSlots is int
+        && request.resource.data.availableSlots >= 0
+        && request.resource.data.availableSlots
+          <= request.resource.data.totalSlots
+        && request.resource.data.status == 'approved';
+
+      allow update: if (
+        isLandlord()
+        && ownsListing()
+        && request.resource.data.landlordId == resource.data.landlordId
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.availableSlots is int
+        && request.resource.data.totalSlots is int
+        && request.resource.data.availableSlots >= 0
+        && request.resource.data.availableSlots
+          <= request.resource.data.totalSlots
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name',
+          'address',
+          'monthlyPrice',
+          'availableSlots',
+          'totalSlots',
+          'amenities',
+          'description',
+          'photoUrls',
+          'proximityLabel',
+          'latitude',
+          'longitude',
+          'landlordName',
+          'landlordPhone',
+          'roomTypes',
+          'utilitiesIncluded',
+          'updatedAt'
+        ])
+      ) || validAverageRatingUpdate();
+
+      allow delete: if isLandlord() && ownsListing();
+
+      match /reviews/{reviewId} {
+        allow read: if signedIn()
+          && (get(/databases/$(database)/documents/dormitories/$(dormitoryId))
+                .data.status == 'approved'
+            || get(/databases/$(database)/documents/dormitories/$(dormitoryId))
+                .data.landlordId == request.auth.uid);
+
+        allow create: if signedIn()
+          && get(/databases/$(database)/documents/dormitories/$(dormitoryId))
+            .data.status == 'approved'
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.authorName is string
+          && request.resource.data.comment is string;
+
+        allow update: if false;
+        allow delete: if isLandlord()
+          && get(/databases/$(database)/documents/dormitories/$(dormitoryId))
+            .data.landlordId == request.auth.uid;
+      }
+    }
+  }
+}
