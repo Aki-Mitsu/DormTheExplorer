@@ -7,6 +7,7 @@ import '../domain/dormitory_search_filters.dart';
 import 'dorm_dashboard_view_model.dart';
 import 'dorm_details_screen.dart';
 import 'search_filters_screen.dart';
+import 'profile_dashboard_screen.dart';
 
 class DormDashboardScreen extends StatefulWidget {
   const DormDashboardScreen({
@@ -57,7 +58,6 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
     setState(() => _selectedDestination = index);
     if (_isLandlord) {
       if (index == 1) _showComingSoon();
-      if (index == 2) _showProfilePlaceholder();
       return;
     }
 
@@ -65,8 +65,6 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       _viewModel.showAllDormitories();
     } else if (index == 1) {
       _viewModel.toggleFavoritesOnly();
-    } else {
-      _showProfilePlaceholder();
     }
   }
 
@@ -96,36 +94,6 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
     _viewModel.applySearchFilters(filters);
   }
 
-  void _showProfilePlaceholder() {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Profile', style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 8),
-              Text(
-                _isLandlord ? 'Landlord account' : 'Seeker account',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Profile settings will be available soon.',
-                style: Theme.of(context).textTheme.bodySmall
-                    ?.copyWith(color: AppTheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,28 +102,34 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         bottom: false,
         child: Column(
           children: [
-            _DashboardHeader(isLandlord: _isLandlord),
+            if (_selectedDestination != 2)
+              _DashboardHeader(isLandlord: _isLandlord),
             Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final contentWidth = constraints.maxWidth > 1032
-                      ? 1000.0
-                      : constraints.maxWidth - 32;
+              child: _selectedDestination == 2
+                  ? ProfileDashboardScreen(
+                      userId: widget.userId,
+                      accountRole: widget.accountRole,
+                    )
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final contentWidth = constraints.maxWidth > 1032
+                            ? 1000.0
+                            : constraints.maxWidth - 32;
 
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: SizedBox(
-                        width: contentWidth,
-                        child: _isLandlord
-                            ? _buildLandlordContent()
-                            : _buildSeekerContent(contentWidth),
-                      ),
+                        return SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: SizedBox(
+                              width: contentWidth,
+                              child: _isLandlord
+                                  ? _buildLandlordContent()
+                                  : _buildSeekerContent(contentWidth),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
