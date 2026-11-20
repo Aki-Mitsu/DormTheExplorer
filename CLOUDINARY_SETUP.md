@@ -17,7 +17,7 @@ Get your Cloud name from the Cloudinary Console dashboard.
 
 ## 2. App configuration
 
-The app is configured by default with cloud name qnvu74gu and unsigned preset
+The app is configured by default with cloud name qnvu74g0 and unsigned preset
 Dorm the Explorer, so you do not need to pass Dart defines when running it.
 These two values are visible in the client app by design. Never put the
 Cloudinary API secret in Flutter or a committed file. Signed uploads require a

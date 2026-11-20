@@ -83,9 +83,17 @@ class CloudinaryUploadService {
       final message = error is Map<String, dynamic>
           ? error['message'] as String?
           : null;
-      throw CloudinaryUploadException(
-        message ?? 'Cloudinary upload failed (HTTP ${response.statusCode}).',
-      );
+      final cloudinaryDiagnostic = response.headers['x-cld-error'];
+      final details = <String>[
+        'Cloudinary upload failed (HTTP ${response.statusCode}).',
+        if (message != null && message.isNotEmpty) message,
+        if (cloudinaryDiagnostic != null &&
+            cloudinaryDiagnostic.isNotEmpty &&
+            cloudinaryDiagnostic != message)
+          'Cloudinary diagnostic: $cloudinaryDiagnostic',
+        'Request cloud: ${_config.cloudName}; preset: ${_config.unsignedUploadPreset}.',
+      ];
+      throw CloudinaryUploadException(details.join(' '));
     }
 
     try {

@@ -11,7 +11,7 @@ class CloudinaryConfig {
   const CloudinaryConfig.fromEnvironment()
     : cloudName = const String.fromEnvironment(
         'CLOUDINARY_CLOUD_NAME',
-        defaultValue: 'qnvu74gu',
+        defaultValue: 'qnvu74g0',
       ),
       unsignedUploadPreset = const String.fromEnvironment(
         'CLOUDINARY_UPLOAD_PRESET',
