@@ -83,8 +83,13 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _loadRoute() =>
-      _viewModel.loadRoute(origin: _dormLocation, destination: _destination);
+  Future<void> _loadRoute() {
+    if (!_hasLocation && !widget.canEditLocation) return Future<void>.value();
+    return _viewModel.loadRoute(
+      origin: _dormLocation,
+      destination: _destination,
+    );
+  }
 
   @override
   void dispose() {
@@ -609,7 +614,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
             },
           ),
           const SizedBox(height: 10),
-          if (_previewingLocation)
+          if (_previewingLocation && !widget.canEditLocation)
             Container(
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(10),
@@ -618,19 +623,22 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Preview route only: this dorm does not have saved coordinates yet.',
+                'The landlord has not saved an exact map location for this dorm yet.',
                 style: Theme.of(context).textTheme.labelSmall
                     ?.copyWith(color: AppTheme.primaryDeep),
               ),
             ),
-          DormLocationMap(
-            dormLocation: _dormLocation,
-            dormLabel: _dormName,
-            routePoints: route?.geometry ?? const [],
-            destination: _destination.location,
-            onMapTap: widget.canEditLocation ? _selectMapPin : null,
-            onDormMarkerTap: _showPinDetails,
-          ),
+          if (_hasLocation || widget.canEditLocation)
+            DormLocationMap(
+              dormLocation: _dormLocation,
+              dormLabel: _dormName,
+              routePoints: route?.geometry ?? const [],
+              destination: _destination.location,
+              onMapTap: widget.canEditLocation ? _selectMapPin : null,
+              onDormMarkerTap: _showPinDetails,
+            )
+          else
+            _locationUnavailableCard(),
           if (widget.canEditLocation)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -647,9 +655,33 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     );
   }
 
+  Widget _locationUnavailableCard() => Container(
+    height: 220,
+    decoration: BoxDecoration(
+      color: AppTheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(18),
+    ),
+    child: const Center(
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_off_outlined, size: 32, color: AppTheme.outline),
+            SizedBox(height: 8),
+            Text('Map unavailable until the dorm pin is saved.'),
+          ],
+        ),
+      ),
+    ),
+  );
+
   Widget _routeSummary(DormRoute? route) {
     if (_viewModel.isLoadingRoute) {
       return const LinearProgressIndicator(minHeight: 2);
+    }
+    if (!_hasLocation && !widget.canEditLocation) {
+      return const Text('Route unavailable until the dorm pin is saved.');
     }
     if (_viewModel.routeError != null) {
       return Row(
