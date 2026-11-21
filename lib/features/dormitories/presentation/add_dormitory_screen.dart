@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../theme/app_theme.dart';
 import '../data/cloudinary_upload_service.dart';
+import '../data/dorm_location_service.dart';
 import '../data/dormitory_repository.dart';
 import '../domain/dormitory.dart';
 
@@ -51,6 +52,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   final _imagePicker = ImagePicker();
   final _uploadService = CloudinaryUploadService();
   final _repository = DormitoryRepository();
+  final _locationService = DormLocationService();
   final Set<String> _amenities = {};
   final List<String> _photoUrls = [];
   DormRoomType? _roomType;
@@ -84,6 +86,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   @override
   void dispose() {
     _uploadService.close();
+    _locationService.close();
     _nameController.dispose();
     _addressController.dispose();
     _priceController.dispose();
@@ -156,123 +159,287 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
 
   Future<void> _chooseLocation() async {
     var selectedLocation = _location;
-    final result = await showDialog<LatLng>(
+    var selectedAddress = _addressController.text.trim();
+    if (selectedAddress.isEmpty) selectedAddress = '';
+    var isLocating = false;
+    var isResolvingAddress = false;
+    final mapController = MapController();
+
+    final result = await showDialog<(LatLng, String?)>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => Dialog(
-          insetPadding: const EdgeInsets.all(16),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 620),
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Choose dormitory location',
-                    style: Theme.of(context).textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Tap the map to place the pin. Drag and zoom to find the exact spot.',
-                    style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: AppTheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: 14),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: SizedBox(
-                      height: MediaQuery.sizeOf(context).height * 0.48,
-                      child: FlutterMap(
-                        options: MapOptions(
-                          initialCenter: selectedLocation,
-                          initialZoom: 15,
-                          onTap: (tapPosition, point) =>
-                              setDialogState(() => selectedLocation = point),
-                        ),
-                        children: [
-                          TileLayer(
-                            urlTemplate:
-                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            tileProvider: NetworkTileProvider(
-                              cachingProvider:
-                                  const DisabledMapCachingProvider(),
-                            ),
-                            userAgentPackageName:
-                                'dormtheexplorer.app.dorm_the_explorer',
-                            maxNativeZoom: 19,
-                          ),
-                          MarkerLayer(
-                            markers: [
-                              Marker(
-                                point: selectedLocation,
-                                width: 48,
-                                height: 52,
-                                child: const Icon(
-                                  Icons.location_on_rounded,
-                                  size: 46,
-                                  color: AppTheme.primaryContainer,
-                                ),
-                              ),
-                            ],
-                          ),
-                          RichAttributionWidget(
-                            alignment: AttributionAlignment.bottomRight,
-                            attributions: [
-                              TextSourceAttribution(
-                                '© OpenStreetMap contributors',
-                                onTap: () => launchUrl(
-                                  Uri.parse(
-                                    'https://www.openstreetmap.org/copyright',
-                                  ),
-                                  mode: LaunchMode.externalApplication,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          Future<void> useCurrentLocation() async {
+            setDialogState(() => isLocating = true);
+            try {
+              final location = await _locationService.getCurrentLocation();
+              if (!dialogContext.mounted) return;
+              mapController.move(location, 16);
+              setDialogState(() {
+                selectedLocation = location;
+                selectedAddress = '';
+              });
+
+              try {
+                final address = await _locationService.reverseGeocode(location);
+                if (!dialogContext.mounted) return;
+                setDialogState(() => selectedAddress = address ?? '');
+                if (address == null && mounted) {
+                  _showMessage(
+                    'Location found. Enter the street address manually.',
+                  );
+                }
+              } catch (_) {
+                if (mounted) {
+                  _showMessage(
+                    'Location found, but its address could not be looked up. '
+                    'Enter it manually.',
+                  );
+                }
+              }
+            } on DormLocationException catch (error) {
+              if (!dialogContext.mounted) return;
+              if (error.issue == DormLocationIssue.servicesDisabled) {
+                final openSettings = await showDialog<bool>(
+                  context: dialogContext,
+                  builder: (promptContext) => AlertDialog(
+                    title: const Text('Turn on location'),
+                    content: const Text(
+                      'Enable your phone location services to use your current position.',
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '${selectedLocation.latitude.toStringAsFixed(5)}, '
-                    '${selectedLocation.longitude.toStringAsFixed(5)}',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(promptContext, false),
+                        child: const Text('Not now'),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () => Navigator.pop(
-                            context,
-                            selectedLocation,
-                          ),
-                          child: const Text('Use this location'),
-                        ),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(promptContext, true),
+                        child: const Text('Open settings'),
                       ),
                     ],
                   ),
-                ],
+                );
+                if (openSettings == true) {
+                  await _locationService.openLocationSettings();
+                }
+              } else if (error.issue ==
+                  DormLocationIssue.permissionDeniedForever) {
+                final openSettings = await showDialog<bool>(
+                  context: dialogContext,
+                  builder: (promptContext) => AlertDialog(
+                    title: const Text('Location permission needed'),
+                    content: const Text(
+                      'Allow location access in app settings, or keep placing the pin manually.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(promptContext, false),
+                        child: const Text('Not now'),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(promptContext, true),
+                        child: const Text('Open settings'),
+                      ),
+                    ],
+                  ),
+                );
+                if (openSettings == true) {
+                  await _locationService.openAppSettings();
+                }
+              } else if (mounted) {
+                _showMessage(error.message);
+              }
+            } catch (_) {
+              if (mounted) {
+                _showMessage(
+                  'Could not get your current location. You can place the pin manually.',
+                );
+              }
+            } finally {
+              if (dialogContext.mounted) {
+                setDialogState(() => isLocating = false);
+              }
+            }
+          }
+
+          Future<void> confirmLocation() async {
+            if (selectedAddress.isNotEmpty) {
+              Navigator.pop(
+                dialogContext,
+                (selectedLocation, selectedAddress),
+              );
+              return;
+            }
+            setDialogState(() => isResolvingAddress = true);
+            String? address;
+            try {
+              address = await _locationService.reverseGeocode(selectedLocation);
+            } catch (_) {
+              address = null;
+            }
+            if (!dialogContext.mounted) return;
+            Navigator.pop(
+              dialogContext,
+              (selectedLocation, address),
+            );
+            if ((address == null || address.isEmpty) && mounted) {
+              _showMessage(
+                'Pin saved. Enter the complete address manually.',
+              );
+            }
+          }
+
+          return Dialog(
+            insetPadding: const EdgeInsets.all(16),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 620),
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Choose dormitory location',
+                      style: Theme.of(dialogContext).textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Use your current location or tap the map to place the pin.',
+                      style: Theme.of(dialogContext).textTheme.bodySmall
+                          ?.copyWith(color: AppTheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      onPressed: isLocating || isResolvingAddress
+                          ? null
+                          : useCurrentLocation,
+                      icon: isLocating
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.my_location_rounded),
+                      label: Text(
+                        isLocating
+                            ? 'Finding your location…'
+                            : 'Use my current location',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: SizedBox(
+                        height: MediaQuery.sizeOf(dialogContext).height * 0.40,
+                        child: FlutterMap(
+                          mapController: mapController,
+                          options: MapOptions(
+                            initialCenter: selectedLocation,
+                            initialZoom: 15,
+                            onTap: (tapPosition, point) {
+                              setDialogState(() {
+                                selectedLocation = point;
+                                selectedAddress = '';
+                              });
+                            },
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              tileProvider: NetworkTileProvider(
+                                cachingProvider:
+                                    const DisabledMapCachingProvider(),
+                              ),
+                              userAgentPackageName:
+                                  'dormtheexplorer.app.dorm_the_explorer',
+                              maxNativeZoom: 19,
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: selectedLocation,
+                                  width: 48,
+                                  height: 52,
+                                  child: const Icon(
+                                    Icons.location_on_rounded,
+                                    size: 46,
+                                    color: AppTheme.primaryContainer,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            RichAttributionWidget(
+                              alignment: AttributionAlignment.bottomRight,
+                              attributions: [
+                                TextSourceAttribution(
+                                  '© OpenStreetMap contributors',
+                                  onTap: () => launchUrl(
+                                    Uri.parse(
+                                      'https://www.openstreetmap.org/copyright',
+                                    ),
+                                    mode: LaunchMode.externalApplication,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '${selectedLocation.latitude.toStringAsFixed(5)}, '
+                      '${selectedLocation.longitude.toStringAsFixed(5)}',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(dialogContext).textTheme.labelMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: isLocating || isResolvingAddress
+                                ? null
+                                : () => Navigator.pop(dialogContext),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: isLocating || isResolvingAddress
+                                ? null
+                                : confirmLocation,
+                            child: isResolvingAddress
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppTheme.onPrimary,
+                                    ),
+                                  )
+                                : const Text('Use this location'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
     if (result != null && mounted) {
-      setState(() => _location = result);
+      setState(() {
+        _location = result.$1;
+        _addressController.text = result.$2 ?? '';
+      });
     }
   }
 
@@ -451,7 +618,22 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                         icon: Icons.near_me_outlined,
                         validator: (value) =>
                             _requiredText(value, 'Complete address'),
-                        helperText: 'Enter the full street and barangay address.',
+                        helperText:
+                            'Pin a location or use your current location to '
+                            'fill this address automatically. You can edit it.',
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: _isSaving ? null : _chooseLocation,
+                        icon: const Icon(Icons.add_location_alt_outlined),
+                        label: const Text('Pin location to fill address'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.primaryContainer,
+                          minimumSize: const Size.fromHeight(44),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 14),
                       _textField(
@@ -526,8 +708,6 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                 const SizedBox(height: 14),
                 _descriptionSection(),
                 const SizedBox(height: 14),
-                _locationSection(),
-                const SizedBox(height: 14),
                 _photosSection(),
               ],
             ),
@@ -562,7 +742,6 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
               children: [
                 TextSpan(text: title),
                 if (title == 'Description' ||
-                    title == 'Location' ||
                     title == 'Dormitory Photos')
                   const TextSpan(
                     text: ' *',
@@ -875,145 +1054,6 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
     );
   }
 
-  Widget _locationSection() {
-    final latitude = _location.latitude.toStringAsFixed(5);
-    final longitude = _location.longitude.toStringAsFixed(5);
-    return _section(
-      title: 'Location',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Pin the exact location for student directions and distance estimates.',
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: AppTheme.onSurfaceVariant),
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: SizedBox(
-              height: 190,
-              child: Stack(
-                children: [
-                  FlutterMap(
-                    options: MapOptions(
-                      initialCenter: _location,
-                      initialZoom: 14,
-                      interactionOptions: const InteractionOptions(
-                        flags: InteractiveFlag.none,
-                      ),
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        tileProvider: NetworkTileProvider(
-                          cachingProvider: const DisabledMapCachingProvider(),
-                        ),
-                        userAgentPackageName:
-                            'dormtheexplorer.app.dorm_the_explorer',
-                        maxNativeZoom: 19,
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: _location,
-                            width: 42,
-                            height: 48,
-                            child: const Icon(
-                              Icons.location_on_rounded,
-                              size: 42,
-                              color: AppTheme.primaryContainer,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: _mapBadge('$latitude° N, $longitude° E'),
-                  ),
-                  Positioned(
-                    left: 10,
-                    right: 10,
-                    bottom: 10,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.surfaceContainerLowest.withValues(
-                          alpha: 0.94,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on_rounded,
-                            color: AppTheme.primaryContainer,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _addressController.text.trim().isEmpty
-                                  ? 'Selected pin location'
-                                  : _addressController.text.trim(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.labelMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            onPressed: _chooseLocation,
-            icon: const Icon(Icons.pin_drop_outlined),
-            label: const Text('Tap to Adjust Pin Location on Map'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.onSurface,
-              backgroundColor: AppTheme.surfaceContainer,
-              side: BorderSide.none,
-              minimumSize: const Size.fromHeight(46),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _mapBadge(String text) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-    decoration: BoxDecoration(
-      color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.94),
-      borderRadius: BorderRadius.circular(999),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 7,
-          height: 7,
-          decoration: const BoxDecoration(
-            color: AppTheme.primaryContainer,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(text, style: Theme.of(context).textTheme.labelSmall),
-      ],
-    ),
-  );
 
   Widget _photosSection() {
     return _section(
