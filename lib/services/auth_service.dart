@@ -108,7 +108,8 @@ class AuthService {
         'wrong-password' ||
         'invalid-credential' => 'Email or password is incorrect.',
         'user-disabled' => 'This account has been disabled.',
-        'too-many-requests' => 'Too many attempts. Please try again later.',
+        'too-many-requests' =>
+          'Too many sign-in attempts. Please wait a little while, then try again.',
         'network-request-failed' =>
           'Check your internet connection and try again.',
         'operation-not-allowed' =>

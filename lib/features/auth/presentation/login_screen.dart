@@ -1,3 +1,4 @@
+import 'package:dorm_the_explorer/app_notice.dart';
 import 'package:dorm_the_explorer/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
@@ -26,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isSubmitting = false;
   bool _isSendingReset = false;
+  String? _loginError;
 
   @override
   void dispose() {
@@ -52,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _showMessage('Signed in successfully.');
     } catch (error) {
       if (!mounted) return;
-      _showMessage(AuthService.messageFor(error));
+      setState(() => _loginError = AuthService.messageFor(error));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -84,11 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
+  void _showMessage(String message) => AppNotice.show(context, message);
 
   void _openCreateAccount() {
     Navigator.of(context).push(
@@ -143,6 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                     const SizedBox(height: 8),
                                     TextFormField(
                                       controller: _emailController,
+                                      onChanged: (_) {
+                                        if (_loginError != null) {
+                                          setState(() => _loginError = null);
+                                        }
+                                      },
                                       keyboardType: TextInputType.emailAddress,
                                       textInputAction: TextInputAction.next,
                                       autofillHints: const [
@@ -165,6 +168,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                     const SizedBox(height: 8),
                                     TextFormField(
                                       controller: _passwordController,
+                                      onChanged: (_) {
+                                        if (_loginError != null) {
+                                          setState(() => _loginError = null);
+                                        }
+                                      },
                                       obscureText: _obscurePassword,
                                       textInputAction: TextInputAction.done,
                                       autofillHints: const [
@@ -198,6 +206,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ? 'Enter your password'
                                           : null,
                                     ),
+                                    if (_loginError case final message?) ...[
+                                      const SizedBox(height: 14),
+                                      _LoginErrorBanner(message: message),
+                                    ],
                                     const SizedBox(height: 8),
                                     Align(
                                       alignment: Alignment.centerRight,
@@ -325,5 +337,54 @@ class _LoginScreenState extends State<LoginScreen> {
       return 'Enter a valid email address';
     }
     return null;
+  }
+}
+
+class _LoginErrorBanner extends StatelessWidget {
+  const _LoginErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: colors.errorContainer,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colors.error.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline_rounded, color: colors.onErrorContainer),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Unable to sign in',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: colors.onErrorContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.onErrorContainer,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

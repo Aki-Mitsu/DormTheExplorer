@@ -1,3 +1,4 @@
+import 'package:dorm_the_explorer/app_notice.dart';
 import 'package:dorm_the_explorer/theme/app_theme.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -110,18 +111,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
         _pendingVerification = true;
         _verificationEmail = _emailController.text.trim();
       });
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text('Verification link sent. Check your email.'),
-          ),
-        );
+      AppNotice.show(context, 'Verification link sent. Check your email.');
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(AuthService.messageFor(error))));
+      AppNotice.show(context, AuthService.messageFor(error));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -135,25 +128,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
       if (!mounted) return;
       setState(() => _emailVerified = verified);
       if (showMessage) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(
-                verified
-                    ? 'Email verified. Finish your registration.'
-                    : 'Email is not verified yet. Open the link in your inbox.',
-              ),
-            ),
-          );
+        AppNotice.show(
+          context,
+          verified
+              ? 'Email verified. Finish your registration.'
+              : 'Email is not verified yet. Open the link in your inbox.',
+        );
       }
     } catch (error) {
       if (mounted && showMessage) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(AuthService.messageFor(error))),
-          );
+        AppNotice.show(context, AuthService.messageFor(error));
       }
     } finally {
       if (mounted) setState(() => _isCheckingVerification = false);
@@ -166,18 +150,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
     try {
       await _authService.resendVerificationEmail();
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('A new verification link was sent.')),
-        );
+      AppNotice.show(context, 'A new verification link was sent.');
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(AuthService.messageFor(error))),
-          );
+        AppNotice.show(context, AuthService.messageFor(error));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
