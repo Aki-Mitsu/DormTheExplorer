@@ -41,6 +41,7 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
+/android/build/
 /android/app/debug
 /android/app/profile
 /android/app/release
@@ -50,6 +51,7 @@ app.*.map.json
 
 # AI agent skills
 /.agents/skills/
+/.config/dart_skills/skills_config.json
 
 /UI-DORM-THE-EXPLORER/
 
