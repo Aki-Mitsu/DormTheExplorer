@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../services/auth_service.dart';
+import '../../../app_notice.dart';
 import '../../../theme/app_theme.dart';
 import '../data/cloudinary_upload_service.dart';
 
@@ -425,14 +426,10 @@ class ProfileDashboardScreen extends StatelessWidget {
     try {
       await AuthService().resetPassword(targetEmail);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password reset email sent to $targetEmail.')),
-      );
+      AppNotice.show(context, 'Password reset email sent to $targetEmail.');
     } catch (error) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AuthService.messageFor(error))),
-      );
+      AppNotice.show(context, AuthService.messageFor(error));
     }
   }
 
@@ -661,14 +658,11 @@ class _ProfilePictureState extends State<_ProfilePicture> {
 
       if (!mounted) return;
       setState(() => _photoUrl = downloadUrl);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            syncError == null
-                ? 'Profile photo updated.'
-                : 'Profile photo updated, but listing sync failed: $syncError',
-          ),
-        ),
+      AppNotice.show(
+        context,
+        syncError == null
+            ? 'Profile photo updated.'
+            : 'Profile photo updated, but listing sync failed: $syncError',
       );
     } catch (error) {
       if (!mounted) return;
@@ -678,8 +672,7 @@ class _ProfilePictureState extends State<_ProfilePicture> {
         FirebaseException(:final message?) => message,
         _ => 'Could not upload your profile photo. Please try again.',
       };
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
+      AppNotice.show(context, message);
     } finally {
       if (mounted && _isUploading) {
         setState(() => _isUploading = false);
