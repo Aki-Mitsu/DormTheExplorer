@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../theme/app_theme.dart';
+import '../data/batangas_city_boundary.dart';
 import '../data/cloudinary_upload_service.dart';
 import '../data/dorm_location_service.dart';
 import '../data/dormitory_repository.dart';
@@ -161,9 +162,19 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   Future<void> _chooseLocation() async {
     var selectedLocation = _location;
     var selectedAddress = _addressController.text.trim();
+    var selectionChanged = false;
+    if (!_locationService.isWithinBatangasCity(selectedLocation)) {
+      selectedLocation = const LatLng(13.7565, 121.0583);
+      selectedAddress = '';
+      selectionChanged = true;
+    }
     if (selectedAddress.isEmpty) selectedAddress = '';
     var isLocating = false;
     var isResolvingAddress = false;
+    var isReturningToCity = false;
+    var lastValidMapCenter = selectedLocation;
+    var lastValidMapZoom = 15.0;
+    String? locationMessage;
     final mapController = MapController();
 
     final result = await showDialog<(LatLng, String?)>(
@@ -175,10 +186,23 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
             try {
               final location = await _locationService.getCurrentLocation();
               if (!dialogContext.mounted) return;
+              if (!_locationService.isWithinBatangasCity(location)) {
+                setDialogState(
+                  () => locationMessage =
+                      'Your current location is outside Batangas City. '
+                      'Choose a pin within the outlined area.',
+                );
+                return;
+              }
+
+              lastValidMapCenter = location;
+              lastValidMapZoom = 16;
               mapController.move(location, 16);
               setDialogState(() {
                 selectedLocation = location;
                 selectedAddress = '';
+                selectionChanged = true;
+                locationMessage = null;
               });
 
               try {
@@ -264,14 +288,26 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
           }
 
           Future<void> confirmLocation() async {
-            if (selectedAddress.isNotEmpty) {
+            if (locationMessage != null) return;
+            if (!_locationService.isWithinBatangasCity(selectedLocation)) {
+              setDialogState(
+                () => locationMessage =
+                    'Choose a pin within Batangas City to continue.',
+              );
+              return;
+            }
+            if (!selectionChanged && selectedAddress.isNotEmpty) {
               Navigator.pop(
                 dialogContext,
                 (selectedLocation, selectedAddress),
               );
               return;
             }
-            setDialogState(() => isResolvingAddress = true);
+
+            setDialogState(() {
+              isResolvingAddress = true;
+              locationMessage = null;
+            });
             String? address;
             try {
               address = await _locationService.reverseGeocode(selectedLocation);
@@ -285,7 +321,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
             );
             if ((address == null || address.isEmpty) && mounted) {
               _showMessage(
-                'Pin saved. Enter the complete address manually.',
+                'Pin saved within Batangas City. Enter the complete address manually.',
               );
             }
           }
@@ -307,7 +343,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Use your current location or tap the map to place the pin.',
+                      'Choose a point inside the Batangas City boundary, or use your current location.',
                       style: Theme.of(dialogContext).textTheme.bodySmall
                           ?.copyWith(color: AppTheme.onSurfaceVariant),
                     ),
@@ -339,10 +375,43 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                           options: MapOptions(
                             initialCenter: selectedLocation,
                             initialZoom: 15,
+                            cameraConstraint: CameraConstraint.contain(
+                              bounds: BatangasCityBoundary.mapBounds,
+                            ),
+                            onPositionChanged: (camera, hasGesture) {
+                              if (isReturningToCity) return;
+                              if (_locationService.isWithinBatangasCity(
+                                camera.center,
+                              )) {
+                                lastValidMapCenter = camera.center;
+                                lastValidMapZoom = camera.zoom;
+                                return;
+                              }
+                              if (!hasGesture) return;
+                              isReturningToCity = true;
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!dialogContext.mounted) return;
+                                mapController.move(
+                                  lastValidMapCenter,
+                                  lastValidMapZoom,
+                                );
+                                isReturningToCity = false;
+                              });
+                            },
                             onTap: (tapPosition, point) {
+                              if (!_locationService.isWithinBatangasCity(point)) {
+                                setDialogState(
+                                  () => locationMessage =
+                                      'That point is outside Batangas City. '
+                                      'Choose a point inside the outlined area.',
+                                );
+                                return;
+                              }
                               setDialogState(() {
                                 selectedLocation = point;
                                 selectedAddress = '';
+                                selectionChanged = true;
+                                locationMessage = null;
                               });
                             },
                           ),
@@ -357,6 +426,27 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                               userAgentPackageName:
                                   'dormtheexplorer.app.dorm_the_explorer',
                               maxNativeZoom: 19,
+                            ),
+                            PolygonLayer(
+                              polygons: [
+                                Polygon(
+                                  points: BatangasCityBoundary.mapBoundsRing,
+                                  holePointsList: BatangasCityBoundary.polygons,
+                                  color: AppTheme.onSurface.withValues(
+                                    alpha: 0.28,
+                                  ),
+                                  borderStrokeWidth: 0,
+                                  disableHolesBorder: true,
+                                ),
+                                for (final boundary
+                                    in BatangasCityBoundary.polygons)
+                                  Polygon(
+                                    points: boundary,
+                                    color: const Color(0x00000000),
+                                    borderColor: AppTheme.primaryContainer,
+                                    borderStrokeWidth: 2,
+                                  ),
+                              ],
                             ),
                             MarkerLayer(
                               markers: [
@@ -397,6 +487,15 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                       textAlign: TextAlign.center,
                       style: Theme.of(dialogContext).textTheme.labelMedium,
                     ),
+                    if (locationMessage != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        locationMessage!,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(dialogContext).textTheme.bodySmall
+                            ?.copyWith(color: AppTheme.error),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     Row(
                       children: [
