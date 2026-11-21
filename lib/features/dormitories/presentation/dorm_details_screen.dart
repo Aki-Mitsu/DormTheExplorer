@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../app_notice.dart';
 import '../../../theme/app_theme.dart';
 import '../data/dorm_listing_report_repository.dart';
 import '../data/dorm_review_repository.dart';
@@ -56,10 +57,11 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   late LatLng _dormLocation;
   RouteDestination _destination = RouteDestination.campuses.first;
   int _photoIndex = 0;
-  int _selectedRating = 5;
+  int _selectedRating = 0;
   bool _bookmarked = false;
   bool _submittingReview = false;
   bool _submittingReport = false;
+  String? _reviewSuccessMessage;
 
   bool get _hasLocation =>
       widget.dormitory.latitude != null && widget.dormitory.longitude != null;
@@ -112,9 +114,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
       mode: LaunchMode.externalApplication,
     );
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open Google Maps.')),
-      );
+      AppNotice.show(context, 'Could not open Google Maps.');
     }
   }
 
@@ -325,8 +325,6 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   Widget _overview() {
     final dorm = widget.dormitory;
     final address = dorm.address.trim();
-    final reviews = _viewModel.reviews;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 22, 16, 0),
       child: Column(
@@ -356,37 +354,6 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.star_rounded,
-                  color: AppTheme.tertiaryAccent,
-                  size: 22,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  _viewModel.averageRating.toStringAsFixed(1),
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '(${reviews.length} student reviews)',
-                    style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: AppTheme.onSurfaceVariant),
-                  ),
-                ),
-              ],
-            ),
           ),
           const SizedBox(height: 10),
           Container(
@@ -944,13 +911,33 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                 ),
               ),
             ),
+          if (_reviewSuccessMessage != null) _reviewSuccessBanner(),
           for (final review in reviews) _ReviewCard(review: review),
         ],
       ),
+      titleAccessory: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.star_rounded,
+            size: 17,
+            color: AppTheme.tertiaryAccent,
+          ),
+          const SizedBox(width: 3),
+          Text(
+            '${reviews.isEmpty ? '—' : _viewModel.averageRating.toStringAsFixed(1)}/5',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: AppTheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
       trailing: Text(
-        '${reviews.length} reviews',
+        '${reviews.length} ${reviews.length == 1 ? 'review' : 'reviews'}',
         style: Theme.of(context).textTheme.bodySmall
             ?.copyWith(color: AppTheme.onSurfaceVariant),
+        textAlign: TextAlign.end,
       ),
     );
   }
@@ -989,22 +976,35 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         ),
         const SizedBox(height: 8),
         Row(
-          children: List.generate(
-            5,
-            (index) => IconButton(
-              onPressed: () => setState(() => _selectedRating = index + 1),
-              visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints.tightFor(width: 34, height: 34),
-              padding: EdgeInsets.zero,
-              tooltip: '${index + 1} stars',
-              icon: Icon(
-                index < _selectedRating
-                    ? Icons.star_rounded
-                    : Icons.star_border_rounded,
-                color: AppTheme.tertiaryAccent,
+          children: [
+            Text(
+              _selectedRating == 0 ? 'Tap to rate' : '$_selectedRating/5',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppTheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ),
+            const SizedBox(width: 8),
+            ...List.generate(
+              5,
+              (index) => IconButton(
+                onPressed: () => setState(() => _selectedRating = index + 1),
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints.tightFor(
+                  width: 34,
+                  height: 34,
+                ),
+                padding: EdgeInsets.zero,
+                tooltip: 'Rate ${index + 1} out of 5 stars',
+                icon: Icon(
+                  index < _selectedRating
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  color: AppTheme.tertiaryAccent,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         TextField(
@@ -1041,10 +1041,21 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     ),
   );
 
+  Widget _reviewSuccessBanner() => _ReviewSuccessBanner(
+    message: _reviewSuccessMessage!,
+    onDismissed: () {
+      if (mounted) setState(() => _reviewSuccessMessage = null);
+    },
+  );
+
   Future<void> _submitReview() async {
     final comment = _reviewController.text.trim();
     if (comment.isEmpty) {
       _showMessage('Write a comment before posting your review.');
+      return;
+    }
+    if (_selectedRating == 0) {
+      _showMessage('Select a star rating before posting your review.');
       return;
     }
 
@@ -1098,7 +1109,9 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         comment: comment,
       );
       _reviewController.clear();
-      if (mounted) _showMessage('Review posted successfully.');
+      if (mounted) {
+        setState(() => _reviewSuccessMessage = 'Review posted successfully.');
+      }
     } on FirebaseException catch (error) {
       if (mounted) {
         _showMessage(error.message ?? 'Could not load your profile name.');
@@ -1171,7 +1184,12 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     );
   }
 
-  Widget _section(String title, Widget child, {Widget? trailing}) => Padding(
+  Widget _section(
+    String title,
+    Widget child, {
+    Widget? trailing,
+    Widget? titleAccessory,
+  }) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1179,10 +1197,23 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         Row(
           children: [
             Expanded(
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  if (titleAccessory != null) ...[
+                    const SizedBox(width: 6),
+                    titleAccessory,
+                  ],
+                ],
               ),
             ),
             ?trailing,
@@ -1262,11 +1293,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
+  void _showMessage(String message) => AppNotice.show(context, message);
 
   String _formatPrice(num price) {
     final grouped = price.round().toString().replaceAllMapped(
@@ -1274,6 +1301,116 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
       (_) => ',',
     );
     return '₱$grouped';
+  }
+}
+
+class _ReviewSuccessBanner extends StatefulWidget {
+  const _ReviewSuccessBanner({
+    required this.message,
+    required this.onDismissed,
+  });
+
+  final String message;
+  final VoidCallback onDismissed;
+
+  @override
+  State<_ReviewSuccessBanner> createState() => _ReviewSuccessBannerState();
+}
+
+class _ReviewSuccessBannerState extends State<_ReviewSuccessBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  Timer? _dismissTimer;
+  bool _didDismiss = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 260),
+      reverseDuration: const Duration(milliseconds: 200),
+    )..addStatusListener(_handleAnimationStatus);
+    _controller.forward();
+    _dismissTimer = Timer(const Duration(seconds: 3), _dismiss);
+  }
+
+  void _handleAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && !_didDismiss) {
+      _didDismiss = true;
+      widget.onDismissed();
+    }
+  }
+
+  void _dismiss() {
+    _dismissTimer?.cancel();
+    if (_controller.status != AnimationStatus.reverse &&
+        _controller.status != AnimationStatus.dismissed) {
+      _controller.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _dismissTimer?.cancel();
+    _controller
+      ..removeStatusListener(_handleAnimationStatus)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scale = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeInBack,
+    );
+
+    return ScaleTransition(
+      scale: scale,
+      alignment: Alignment.topCenter,
+      child: FadeTransition(
+        opacity: _controller,
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+          decoration: BoxDecoration(
+            color: AppTheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.check_circle_outline_rounded,
+                color: AppTheme.onSecondaryContainer,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.message,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.onSecondaryContainer,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Dismiss',
+                visualDensity: VisualDensity.compact,
+                onPressed: _dismiss,
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: AppTheme.onSecondaryContainer,
+                  size: 19,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -1489,16 +1626,18 @@ class _ReviewCard extends StatelessWidget {
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                children: List.generate(
-                  5,
-                  (index) => Icon(
-                    index < review.rating
-                        ? Icons.star_rounded
-                        : Icons.star_border_rounded,
-                    color: AppTheme.tertiaryAccent,
-                    size: 15,
+                children: [
+                  ...List.generate(
+                    5,
+                    (index) => Icon(
+                      index < review.rating
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
+                      color: AppTheme.tertiaryAccent,
+                      size: 15,
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
