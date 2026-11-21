@@ -23,7 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _rememberMe = true;
   bool _obscurePassword = true;
   bool _isSubmitting = false;
   bool _isSendingReset = false;
@@ -200,57 +199,29 @@ class _LoginScreenState extends State<LoginScreen> {
                                           : null,
                                     ),
                                     const SizedBox(height: 8),
-                                    Wrap(
-                                      alignment: WrapAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.center,
-                                      runSpacing: 2,
-                                      children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Checkbox(
-                                              value: _rememberMe,
-                                              onChanged: (value) => setState(
-                                                () => _rememberMe = value ?? false,
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton(
+                                        onPressed: _isSendingReset
+                                            ? null
+                                            : _sendPasswordReset,
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: AppTheme.primaryContainer,
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: const Size(0, 40),
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          'Forgot Password?',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelMedium
+                                              ?.copyWith(
+                                                color: AppTheme.primaryContainer,
                                               ),
-                                              visualDensity: VisualDensity.compact,
-                                              activeColor: AppTheme.primaryContainer,
-                                            ),
-                                            const SizedBox(width: 2),
-                                            Text(
-                                              'Remember me',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.copyWith(
-                                                    color: AppTheme.onSurfaceVariant,
-                                                  ),
-                                            ),
-                                          ],
                                         ),
-                                        TextButton(
-                                          onPressed: _isSendingReset
-                                              ? null
-                                              : _sendPasswordReset,
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: AppTheme.primaryContainer,
-                                            padding: EdgeInsets.zero,
-                                            minimumSize: const Size(0, 40),
-                                            tapTargetSize:
-                                                MaterialTapTargetSize.shrinkWrap,
-                                          ),
-                                          child: Text(
-                                            'Forgot Password?',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelMedium
-                                                ?.copyWith(
-                                                  color: AppTheme.primaryContainer,
-                                                ),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                     const SizedBox(height: 12),
                                     SizedBox(
