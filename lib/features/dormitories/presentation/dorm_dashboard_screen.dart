@@ -177,7 +177,6 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
     final filters = await Navigator.of(context).push<DormitorySearchFilters>(
       MaterialPageRoute<DormitorySearchFilters>(
         builder: (_) => SearchFiltersScreen(
-          initialFilters: _viewModel.searchFilters,
           initialQuery: _viewModel.searchQuery,
         ),
       ),
@@ -496,7 +495,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       );
     }
 
-    final useSingleColumn = availableWidth < 380;
+    final useSingleColumn = availableWidth < 320;
     final maxCardWidth = useSingleColumn
         ? availableWidth
         : availableWidth < 600
