@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-container": "#eeeef0", "surface-dim": "#d9dadc", "secondary-fixed": "#6ffbbe", "outline": "#8d7070", "inverse-surface": "#2f3133", "primary-fixed-dim": "#ffb3b3", "on-error": "#ffffff", "on-secondary": "#ffffff", "primary": "#81001c", "secondary-fixed-dim": "#4edea3", "on-tertiary-container": "#ffbd6b", "tertiary-container": "#784b00", "outline-variant": "#e1bebe", "on-tertiary-fixed": "#2a1700", "background": "#f9f9fc", "on-surface": "#1a1c1e", "primary-container": "#a6192e", "on-error-container": "#93000a", "surface-tint": "#b42537", "surface-container-lowest": "#ffffff", "primary-fixed": "#ffdad9", "on-tertiary-fixed-variant": "#653e00", "error-container": "#ffdad6", "tertiary": "#593600", "on-tertiary": "#ffffff", "surface-container-highest": "#e2e2e5", "secondary-container": "#6cf8bb", "surface-container-low": "#f3f3f6", "on-primary-fixed": "#400009", "surface-container-high": "#e8e8ea", "surface": "#f9f9fc", "on-secondary-fixed-variant": "#005236", "error": "#ba1a1a", "on-primary-fixed-variant": "#920322", "on-secondary-container": "#00714d", "inverse-primary": "#ffb3b3", "tertiary-fixed": "#ffddb8", "on-primary-container": "#ffb7b7", "on-background": "#1a1c1e", "on-secondary-fixed": "#002113", "surface-variant": "#e2e2e5", "on-surface-variant": "#594040", "inverse-on-surface": "#f0f0f3", "surface-bright": "#f9f9fc", "secondary": "#006c49", "on-primary": "#ffffff", "tertiary-fixed-dim": "#ffb95f" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "space-xl": "2rem", "margin": "1rem", "space-lg": "1.5rem", "space-sm": "0.5rem", "gutter": "1rem", "space-md": "1rem" }, fontFamily: { "body-md": ["Plus Jakarta Sans"], "title-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"] }, fontSize: { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "700" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Cancel or Go Back" class="w-11 h-11 -ml-space-xs flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors" onclick="history.back()" type="button" fdprocessedid="jeo9sq"><span class="material-symbols-outlined text-[24px]">close</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">Edit Dormitory</h1></div></div></header><main class="flex flex-col relative w-full px-margin pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full pb-8">
+<!-- Status & Context Notice Banner -->
+
+<!-- SECTION 1: Basic Information -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">apartment</span>
+<h2 class="font-title-md text-title-md text-on-surface">Basic Information</h2>
+</div>
+
+</div>
+<!-- Dormitory Name -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface-variant font-medium">Dormitory Name</label>
+<div class="relative flex items-center bg-surface-container-low rounded-xl px-3.5 py-3">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] mr-2.5">storefront</span>
+<input class="w-full bg-transparent font-body-md text-body-md text-on-surface focus:outline-none placeholder-outline" placeholder="Enter dormitory name" type="text" value="Red Gate Student Residence" fdprocessedid="yxged">
+</div>
+</div>
+<!-- Complete Address -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface-variant font-medium">Complete Physical Address</label>
+<div class="relative flex items-center bg-surface-container-low rounded-xl px-3.5 py-3">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px] mr-2.5">pin_drop</span>
+<input class="w-full bg-transparent font-body-md text-body-md text-on-surface focus:outline-none placeholder-outline" placeholder="e.g. Street, Barangay, City" type="text" value="142 Rizal Avenue, Poblacion, Batangas City" fdprocessedid="nv8em">
+</div>
+<div class="flex items-center gap-1.5 mt-0.5 px-1">
+<span class="material-symbols-outlined text-primary text-[14px]">school</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Near Batangas State University - Pablo Borbon Main Campus</p>
+</div>
+</div>
+<!-- Monthly Rental Rate -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface-variant font-medium">Monthly Rental Rate (PHP)</label>
+<div class="relative flex items-center bg-surface-container-low rounded-xl px-3.5 py-3">
+<span class="font-headline-sm text-headline-sm text-primary font-bold mr-2">₱</span>
+<input class="w-full bg-transparent font-headline-sm text-headline-sm text-on-surface font-bold focus:outline-none placeholder-outline" placeholder="0" type="number" value="3800" fdprocessedid="dc1c6">
+<span class="font-label-md text-label-md text-on-surface-variant ml-2 whitespace-nowrap">/ resident / mo</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant px-1">Standard rate including baseline utilities allowance.</p>
+</div>
+<!-- Slots Management -->
+<div class="grid grid-cols-2 gap-3 pt-1">
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface-variant font-medium">Total Bed Capacity</label>
+<div class="flex items-center bg-surface-container-low rounded-xl px-3.5 py-2.5">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mr-2">bed</span>
+<input class="w-full bg-transparent font-title-md text-title-md text-on-surface font-bold focus:outline-none" type="number" value="18" fdprocessedid="ewd96h">
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface-variant font-medium">Available Slots</label>
+<div class="flex items-center bg-surface-container-low rounded-xl px-3.5 py-2.5">
+<span class="material-symbols-outlined text-secondary text-[18px] mr-2">door_front</span>
+<input class="w-full bg-transparent font-title-md text-title-md text-secondary font-bold focus:outline-none" type="number" value="2" fdprocessedid="uhdqr">
+</div>
+</div>
+</div>
+<!-- Live Status Pill Preview -->
+<div class="bg-secondary-container/20 rounded-xl p-3 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary"></span>
+</span>
+<span class="font-label-md text-label-md text-on-secondary-container font-bold">Status: 2 Slots Left</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold bg-surface-container-lowest px-2.5 py-1 rounded-full shadow-sm">Accepting Inquiries</span>
+</div>
+</div>
+<!-- SECTION 2: Amenities (6 Proposal Features) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">room_service</span>
+<h2 class="font-title-md text-title-md text-on-surface">Included Amenities</h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tap to toggle</span>
+</div>
+<div class="grid grid-cols-2 gap-2.5" id="amenities-container">
+<!-- Wi-Fi (Active) -->
+<button class="flex items-center justify-between p-3 rounded-xl bg-primary-container text-on-primary shadow-sm text-left transition-all" type="button" fdprocessedid="odxokx"><span class="material-symbols-outlined text-[20px]">save</span> Save Changes</button>
+<!-- Own CR / Private Bath (Active) -->
+<button class="flex items-center justify-between p-3 rounded-xl bg-primary-container text-on-primary shadow-sm text-left transition-all" type="button" fdprocessedid="wn1shh"><span class="material-symbols-outlined text-[20px]">save</span> Save Changes</button>
+<!-- Kitchen (Active) -->
+<button class="flex items-center justify-between p-3 rounded-xl bg-primary-container text-on-primary shadow-sm text-left transition-all" type="button" fdprocessedid="tk3miv"><span class="material-symbols-outlined text-[20px]">save</span> Save Changes</button>
+<!-- Aircon (Active) -->
+<button class="flex items-center justify-between p-3 rounded-xl bg-primary-container text-on-primary shadow-sm text-left transition-all" type="button" fdprocessedid="wv9o5u"><span class="material-symbols-outlined text-[20px]">save</span> Save Changes</button>
+<!-- Parking (Inactive) -->
+<button class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low text-on-surface-variant hover:bg-surface-container text-left transition-all" type="button" fdprocessedid="hba69w">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[20px]">local_parking</span>
+<span class="font-label-lg text-label-lg font-semibold">Parking</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-outline">radio_button_unchecked</span>
+</button>
+<!-- Laundry (Inactive) -->
+<button class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low text-on-surface-variant hover:bg-surface-container text-left transition-all" type="button" fdprocessedid="mao8c">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[20px]">local_laundry_service</span>
+<span class="font-label-lg text-label-lg font-semibold">Laundry</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-outline">radio_button_unchecked</span>
+</button>
+</div>
+</div>
+<!-- SECTION 3: Property Description -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">description</span>
+<h2 class="font-title-md text-title-md text-on-surface">Property Description</h2>
+</div>
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[16px]">check</span>
+<span class="font-label-sm text-label-sm font-semibold">Saved draft</span>
+</div>
+</div>
+<div class="relative bg-surface-container-low rounded-xl p-3.5 flex flex-col">
+<textarea class="w-full bg-transparent font-body-md text-body-md text-on-surface focus:outline-none resize-none leading-relaxed" placeholder="Describe the ambiance, inclusions, proximity, and rules..." rows="5">BSU-accredited student dormitory 3 minutes walking distance to BSU Pablo Borbon Main Campus. Fully air-conditioned quad rooms with dedicated study desk, high-speed fiber Wi-Fi, individual lockers, and ensuite bathroom. Quiet, secure, and clean environment ideal for college students.</textarea>
+<div class="flex items-center justify-between pt-2.5 mt-2">
+<span class="font-label-sm text-label-sm text-secondary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> High inquiry quality
+        </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">312 / 500 characters</span>
+</div>
+</div>
+</div>
+<!-- SECTION 4: Map Location -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">map</span>
+<h2 class="font-title-md text-title-md text-on-surface">Map Location Pin</h2>
+</div>
+<span class="font-label-sm text-label-sm bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-semibold">Verified GPS</span>
+</div>
+<!-- Map Preview Placeholder using Google Maps Pipeline -->
+<div class="relative w-full h-44 rounded-xl overflow-hidden shadow-inner" data-alt="Satellite and street view cartographic map showing Rizal Avenue and Batangas State University Pablo Borbon Campus in Batangas City Philippines, with warm red map pin marker and surrounding college town landmarks." data-location="Rizal Avenue, Batangas City, Philippines" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD3M2EZC9BKu677iyQHZh-WwlkniMpjSqdGIn5Cy9xIN-XTkBh1EnPUD3uWTDoXkPcTGcmX6-wUTMTKIYxXbaf8RG0rFz82tuXUBh0JbkaNs4K07LTRsRZGnj3Qkic2PAA0i4VDdn46FLmS70NrsHSPqGupcifuNcbrMajieiO8_5z7GWiRvypwyQ4N3IIaxuNlRTAi-njZCvBFMKHT8u4y2C091mNNhGMNcmE38c8')">
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-transparent flex flex-col justify-end p-3">
+<div class="flex items-center gap-2 text-surface">
+<span class="material-symbols-outlined text-secondary-fixed text-[20px]">location_on</span>
+<div class="min-w-0">
+<p class="font-label-md text-label-md font-bold truncate">142 Rizal Ave, Batangas City</p>
+<p class="font-label-sm text-label-sm text-surface-variant">13.7565° N, 121.0583° E • Pablo Borbon Area</p>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full py-3 px-4 rounded-full bg-surface-container-high text-on-surface font-label-lg text-label-lg font-semibold hover:bg-surface-dim transition-colors flex items-center justify-center gap-2" type="button" fdprocessedid="7twoaa">
+<span class="material-symbols-outlined text-primary text-[18px]">edit_location_alt</span>
+      Tap to Reposition Pin on Map
+    </button>
+</div>
+<!-- SECTION 5: Dormitory Photos -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md mb-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">photo_library</span>
+<h2 class="font-title-md text-title-md text-on-surface">Dormitory Photos</h2>
+</div>
+<span class="font-label-md text-label-md font-bold text-primary">3 / 5 Uploaded</span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<!-- Photo 1: Primary Bedroom with Loft (Cover) -->
+<div class="relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm group">
+<img class="w-full h-full object-cover" data-alt="Sunlit university student dormitory quad room with white metal bunk bed, wooden study desk, open window overlooking campus palm trees, tidy notes, laptop and indoor potted plants in cozy collegiate atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAktRzsNdHQ-_axP5Y49AZZCCqFEGfcYbwSZOfhYRbltI-GIThABRDNl6FAECG5tHzFA4OZAmaMLdT329WmAmM_ygcZR9oAnUnE6g_6hwMvfe3R7JesF2LbjHnqoaTqZuZ3Oo-hT9igrGMlfP0sHQvZbs3lwX2nmIT9REvuvq_rkw0zdEoH1-cGmp2PiY2YyyTtHAfKHIUFgcDrlJ4KhMJJZ_6X2K0amocoMXmlKIs">
+<div class="absolute top-2 left-2 bg-primary text-on-primary font-label-sm text-label-sm font-bold px-2 py-0.5 rounded-full shadow">
+          Cover Photo
+        </div>
+<button aria-label="Delete photo 1" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-inverse-surface/80 text-on-primary flex items-center justify-center backdrop-blur-sm shadow hover:bg-error transition-colors" type="button" fdprocessedid="fopugs">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+<div class="absolute bottom-2 left-2 bg-inverse-surface/70 text-on-primary font-label-sm text-label-sm px-2 py-0.5 rounded-md backdrop-blur-sm">
+          Quad Bed A
+        </div>
+</div>
+<!-- Photo 2: Quiet Study Lounge -->
+<div class="relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm group">
+<img class="w-full h-full object-cover" data-alt="Warmly lit student study lounge inside modern university dormitory, hardwood tables, comfortable ergonomic chairs, book-lined shelves, hanging pendant bulbs, students studying together peacefully." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCk0BIyWSN906IJtOJGHY7D1IUMeh4usWGp1Bm5MAgSa5Di-uxoIA8XS0Abxy3aPIdOuXNlRZJI_jgoyGciQqMcnBHv15l_gbyfMmyAKtWo4IjWoQeOrOYkMoR1VLoyU-6fY0a0GLOwluuTaDpD5FKO_DP3QvVNMmLP9jtJAQ7clzUFAF9XCgc-mxBHmTZ4SD4fjv0r9Zieh4Fswl_qjen2wrWz6I04zu8pLFXSOgw">
+<button aria-label="Delete photo 2" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-inverse-surface/80 text-on-primary flex items-center justify-center backdrop-blur-sm shadow hover:bg-error transition-colors" type="button" fdprocessedid="272ij">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+<div class="absolute bottom-2 left-2 bg-inverse-surface/70 text-on-primary font-label-sm text-label-sm px-2 py-0.5 rounded-md backdrop-blur-sm">
+          Study Area
+        </div>
+</div>
+<!-- Photo 3: Clean Ensuite Bathroom -->
+<div class="relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm group">
+<img class="w-full h-full object-cover" data-alt="Crisp modern ensuite student bathroom with subway wall tiles, glass shower enclosure, round illuminated mirror, floating vanity shelf, pristine hygiene standard in dormitory." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYChIFNdIvX1WmnHO5w0IKjYzcwkxh3IalRMc4jje-Q1YMKaJd78mV-y9wL-Odoc6MapG8F4feoU8sTZfdRncBRDwAf_kXnrE60hDEmz6VKDclLzDV00HcMiVQkkddAcijXm4C7KNf578naSShLL8LJj5bae5c_Rw2WwwRlAzGApT5eFWuypr3eCo_YedVu8x2Px5eWfGLKF2oW1wxRiHLYmCNR8h8adZkk3HBLm4">
+<button aria-label="Delete photo 3" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-inverse-surface/80 text-on-primary flex items-center justify-center backdrop-blur-sm shadow hover:bg-error transition-colors" type="button" fdprocessedid="y6bulm">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+<div class="absolute bottom-2 left-2 bg-inverse-surface/70 text-on-primary font-label-sm text-label-sm px-2 py-0.5 rounded-md backdrop-blur-sm">
+          Ensuite CR
+        </div>
+</div>
+<!-- Add New Photo Action Card -->
+<button class="aspect-[4/3] rounded-xl bg-surface-container-low hover:bg-surface-container flex flex-col items-center justify-center gap-1.5 p-3 text-center transition-all group" type="button" fdprocessedid="eel07o">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest group-hover:bg-primary-container group-hover:text-on-primary text-on-surface-variant flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[22px]">add_a_photo</span>
+</div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Add Photo</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Max 10MB</span>
+</button>
+</div>
+</div>
+<!-- PRIMARY ACTIONS: Save & Cancel -->
+<div class="flex flex-col gap-3 mb-space-lg">
+<button class="w-full h-12 rounded-full bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-[0.99]" type="button" fdprocessedid="qs6pb"><span class="material-symbols-outlined text-[20px]">save</span> Save Changes</button>
+<button class="w-full h-12 rounded-full bg-surface-container-high hover:bg-surface-dim text-on-surface font-label-lg text-label-lg font-semibold flex items-center justify-center transition-colors" onclick="history.back()" type="button" fdprocessedid="lcmynv">Cancel</button>
+</div>
+<!-- DANGER ZONE: Delete Listing -->
+<div class="bg-error-container/40 rounded-xl p-space-md flex flex-col gap-space-sm mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+<h3 class="font-title-md text-title-md font-bold text-on-error-container">Danger Zone</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+      De-listing or permanently deleting will terminate student inquiries and take Red Gate Student Residence offline from Batangas map feeds.
+    </p>
+<button class="w-full mt-1 py-3 px-4 rounded-full bg-surface-container-lowest text-error font-label-lg text-label-lg font-bold hover:bg-error hover:text-on-error transition-all flex items-center justify-center gap-2 shadow-sm" onclick="document.getElementById('delete-modal').classList.remove('hidden')" type="button" fdprocessedid="8130s5"><span class="material-symbols-outlined text-[18px]">delete_forever</span> Delete Dormitory</button>
+</div>
+<!-- DELETE CONFIRMATION MODAL BOTTOM SHEET (Default hidden, togglable) -->
+<div class="hidden fixed inset-0 z-50 bg-inverse-surface/50 backdrop-blur-sm flex items-end justify-center p-0 transition-opacity" id="delete-modal">
+<div class="w-full max-w-lg bg-surface-container-lowest rounded-t-[28px] p-space-lg shadow-[0_-8px_32px_rgba(0,0,0,0.16)] flex flex-col gap-space-md animate-in slide-in-from-bottom">
+<div class="w-12 h-1 bg-surface-container-high rounded-full mx-auto mb-1"></div>
+<div class="w-12 h-12 rounded-full bg-error-container text-error flex items-center justify-center mx-auto">
+<span class="material-symbols-outlined text-[28px]">delete</span>
+</div>
+<div class="text-center flex flex-col gap-1.5">
+<h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">Delete Listing Permanently?</h4>
+<p class="font-body-md text-body-md text-on-surface-variant px-4">
+          Are you sure you want to remove <span class="font-semibold text-on-surface">Red Gate Student Residence</span>? Active applicants and incoming messages will be lost.
+        </p>
+</div>
+<div class="flex flex-col gap-2.5 pt-2">
+<button class="w-full h-12 rounded-full bg-error text-on-error font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow" type="button">
+          Yes, Delete Red Gate Residence
+        </button>
+<button class="w-full h-12 rounded-full bg-surface-container-high text-on-surface font-label-lg text-label-lg font-semibold flex items-center justify-center" onclick="document.getElementById('delete-modal').classList.add('hidden')" type="button">
+          Keep Listing Active
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for amenity chip toggles
+  document.querySelectorAll('#amenities-container button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const isSelected = btn.classList.contains('bg-primary-container');
+      const icon = btn.querySelector('.material-symbols-outlined:last-child');
+      
+      if (isSelected) {
+        btn.className = 'flex items-center justify-between p-3 rounded-xl bg-surface-container-low text-on-surface-variant hover:bg-surface-container text-left transition-all';
+        icon.textContent = 'radio_button_unchecked';
+        icon.className = 'material-symbols-outlined text-[18px] text-outline';
+      } else {
+        btn.className = 'flex items-center justify-between p-3 rounded-xl bg-primary-container text-on-primary shadow-sm text-left transition-all';
+        icon.textContent = 'check_circle';
+        icon.className = 'material-symbols-outlined text-[18px]';
+        icon.style.fontVariationSettings = "'FILL' 1";
+      }
+    });
+  });
+</script></main>
+
+<span id="PING_CONTENT_PUSH_NOTIFICATION" style="display: none;"></span><span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span></body></html>

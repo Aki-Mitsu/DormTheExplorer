@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../theme/app_theme.dart';
+import '../data/dorm_listing_report_repository.dart';
 import '../data/dorm_review_repository.dart';
 import '../data/osrm_routing_service.dart';
 import '../domain/dorm_review.dart';
@@ -15,6 +16,7 @@ import '../domain/dormitory.dart';
 import '../domain/route_destination.dart';
 import 'dorm_details_view_model.dart';
 import 'widgets/dorm_location_map.dart';
+import 'widgets/dormitory_photo_viewer.dart';
 
 class DormDetailsScreen extends StatefulWidget {
   const DormDetailsScreen({
@@ -23,6 +25,7 @@ class DormDetailsScreen extends StatefulWidget {
     this.canEditLocation = false,
     this.canReview = true,
     this.canBookmark = true,
+    this.canReport = true,
     this.isFavorite = false,
     this.onFavoriteChanged,
   });
@@ -31,6 +34,7 @@ class DormDetailsScreen extends StatefulWidget {
   final bool canEditLocation;
   final bool canReview;
   final bool canBookmark;
+  final bool canReport;
   final bool isFavorite;
   final ValueChanged<bool>? onFavoriteChanged;
 
@@ -42,6 +46,8 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   static const _previewLocation = LatLng(13.7661, 121.0600);
 
   late final DormDetailsViewModel _viewModel;
+  final DormListingReportRepository _reportRepository =
+      FirestoreDormListingReportRepository();
   final _scrollController = ScrollController();
   final _reviewController = TextEditingController();
   final _mapKey = GlobalKey();
@@ -52,6 +58,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   int _selectedRating = 5;
   bool _bookmarked = false;
   bool _submittingReview = false;
+  bool _submittingReport = false;
 
   bool get _hasLocation =>
       widget.dormitory.latitude != null && widget.dormitory.longitude != null;
@@ -166,6 +173,12 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     );
   }
 
+  Future<void> _openPhotoViewer() => showDormitoryPhotoViewer(
+    context,
+    photoUrls: widget.dormitory.photoUrls,
+    initialIndex: _photoIndex,
+  );
+
   Widget _photoGallery() {
     final count = widget.dormitory.photoUrls.isEmpty
         ? 3
@@ -176,74 +189,97 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
       child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: AspectRatio(
-              aspectRatio: 16 / 10,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    itemCount: count,
-                    onPageChanged: (page) => setState(() => _photoIndex = page),
-                    itemBuilder: (context, index) {
-                      if (widget.dormitory.photoUrls.isEmpty) {
-                        return const _PhotoPlaceholder(label: 'Dorm photo');
-                      }
-                      return Image.network(
-                        widget.dormitory.photoUrls[index],
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stack) =>
-                            const _PhotoPlaceholder(label: 'Photo unavailable'),
-                      );
-                    },
-                  ),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [Color(0x77000000), Colors.transparent],
+          GestureDetector(
+            onTap: widget.dormitory.photoUrls.isEmpty ? null : _openPhotoViewer,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: AspectRatio(
+                aspectRatio: 16 / 10,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    PageView.builder(
+                      controller: _pageController,
+                      physics: const PageScrollPhysics(),
+                      itemCount: count,
+                      onPageChanged: (page) =>
+                          setState(() => _photoIndex = page),
+                      itemBuilder: (context, index) {
+                        if (widget.dormitory.photoUrls.isEmpty) {
+                          return const _PhotoPlaceholder(label: 'Dorm photo');
+                        }
+                        return Image.network(
+                          widget.dormitory.photoUrls[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stack) =>
+                              const _PhotoPlaceholder(
+                                label: 'Photo unavailable',
+                              ),
+                        );
+                      },
+                    ),
+                    IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [Color(0x77000000), Colors.transparent],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: _Tag(
-                      icon: Icons.directions_walk_rounded,
-                      label: proximity?.isNotEmpty == true
-                          ? proximity!
-                          : _previewingLocation
-                          ? 'Sample location'
-                          : 'Dorm location',
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: _Tag(
+                        icon: Icons.directions_walk_rounded,
+                        label: proximity?.isNotEmpty == true
+                            ? proximity!
+                            : _previewingLocation
+                            ? 'Sample location'
+                            : 'Dorm location',
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: _Tag(label: '${_photoIndex + 1} / $count'),
-                  ),
-                ],
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: _Tag(label: '${_photoIndex + 1} / $count'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: List.generate(count < 3 ? count : 3, (index) {
-              final urls = widget.dormitory.photoUrls;
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: index == 2 ? 0 : 8),
-                  child: GestureDetector(
-                    onTap: () => _pageController.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOut,
+          SizedBox(
+            height: 72,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: count,
+              separatorBuilder: (_, index) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final urls = widget.dormitory.photoUrls;
+                return GestureDetector(
+                  onTap: () => _pageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOut,
+                  ),
+                  child: Container(
+                    width: 96,
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: _photoIndex == index
+                            ? AppTheme.primaryContainer
+                            : Colors.transparent,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(9),
                       child: AspectRatio(
                         aspectRatio: 16 / 10,
                         child: urls.isEmpty
@@ -263,9 +299,9 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -520,22 +556,71 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     );
   }
 
-  Widget _reportButton() => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-    child: Center(
-      child: OutlinedButton.icon(
-        onPressed: () => _showMessage(
-          'Listing reports will be connected in a later release.',
-        ),
-        icon: const Icon(Icons.flag_outlined, size: 18),
-        label: const Text('Report Listing'),
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 40),
-          foregroundColor: AppTheme.onSurfaceVariant,
+  Widget _reportButton() {
+    if (!widget.canReport) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Center(
+        child: OutlinedButton.icon(
+          onPressed: _submittingReport ? null : _reportListing,
+          icon: _submittingReport
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.flag_outlined, size: 18),
+          label: Text(_submittingReport ? 'Submitting…' : 'Report Listing'),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, 40),
+            foregroundColor: AppTheme.onSurfaceVariant,
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
+
+  Future<void> _reportListing() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _showMessage('Sign in as a seeker to report this listing.');
+      return;
+    }
+
+    final submission = await showDialog<_ReportSubmission>(
+      context: context,
+      builder: (_) => const _ListingReportDialog(),
+    );
+    if (!mounted || submission == null) return;
+
+    setState(() => _submittingReport = true);
+    try {
+      await _reportRepository.submitReport(
+        dormitoryId: widget.dormitory.id,
+        reporterId: user.uid,
+        reason: submission.reason,
+        details: submission.details,
+      );
+      if (mounted) _showMessage('Report submitted. Thank you for letting us know.');
+    } on StateError catch (error) {
+      if (mounted) _showMessage(error.message);
+    } on FirebaseException catch (error) {
+      if (!mounted) return;
+      if (error.code == 'permission-denied') {
+        _showMessage(
+          'Could not submit the report. Check that the latest Firestore rules '
+          'are published, then try again.',
+        );
+      } else {
+        _showMessage(error.message ?? 'Could not submit the report.');
+      }
+    } catch (error) {
+      if (mounted) _showMessage('Could not submit the report: $error');
+    } finally {
+      if (mounted) setState(() => _submittingReport = false);
+    }
+  }
 
   Widget _landlordContact() {
     final name = widget.dormitory.landlordName?.trim();
@@ -1315,4 +1400,247 @@ class _ReviewCard extends StatelessWidget {
       fontWeight: FontWeight.w700,
     ),
   );
+}
+
+class _ReportSubmission {
+  const _ReportSubmission({required this.reason, required this.details});
+
+  final String reason;
+  final String details;
+}
+
+class _ListingReportDialog extends StatefulWidget {
+  const _ListingReportDialog();
+
+  @override
+  State<_ListingReportDialog> createState() => _ListingReportDialogState();
+}
+
+class _ListingReportDialogState extends State<_ListingReportDialog> {
+  static const _reasons = <(String, String)>[
+    ('incorrect_information', 'Incorrect listing information'),
+    ('unavailable_property', 'Property is unavailable'),
+    ('misleading_photos', 'Photos are misleading'),
+    ('inappropriate_content', 'Inappropriate content'),
+    ('suspicious_listing', 'Suspicious or potentially fraudulent'),
+    ('other', 'Other'),
+  ];
+
+  final _detailsController = TextEditingController();
+  String _selectedReason = _reasons.first.$1;
+
+  @override
+  void dispose() {
+    _detailsController.dispose();
+    super.dispose();
+  }
+
+  bool _didSubmit = false;
+  bool _showDetailsError = false;
+
+  bool get _requiresSpecificReason => _selectedReason == 'other';
+
+  void _submit() {
+    if (_didSubmit) return;
+    if (_requiresSpecificReason && _detailsController.text.trim().isEmpty) {
+      setState(() => _showDetailsError = true);
+      return;
+    }
+    _didSubmit = true;
+    Navigator.of(context).pop(
+      _ReportSubmission(
+        reason: _selectedReason,
+        details: _detailsController.text.trim(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final reportRed = AppTheme.primary;
+    final mediaQuery = MediaQuery.of(context);
+    final usableHeight =
+        mediaQuery.size.height - mediaQuery.viewInsets.bottom - 32;
+    final dialogMaxHeight = usableHeight > 0 ? usableHeight * 0.9 : 240.0;
+    final reasonMenuWidth = mediaQuery.size.width > 460
+        ? 372.0
+        : mediaQuery.size.width - 88;
+
+    return AlertDialog(
+      scrollable: true,
+      alignment: Alignment.center,
+      constraints: BoxConstraints(
+        maxWidth: 420,
+        maxHeight: dialogMaxHeight,
+      ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      backgroundColor: AppTheme.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      iconPadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+      icon: Container(
+        width: 52,
+        height: 52,
+        decoration: const BoxDecoration(
+          color: AppTheme.errorContainer,
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.flag_rounded,
+          color: AppTheme.error,
+          size: 25,
+        ),
+      ),
+      title: Text(
+        'Report this listing',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AppTheme.onSurface,
+        ),
+      ),
+      titlePadding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Help us keep the community safe. Select the reason that best '
+            'describes the issue. Your report will remain private.',
+            textAlign: TextAlign.justify,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              height: 1.45,
+              color: AppTheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 20),
+          InputDecorator(
+            isEmpty: false,
+            decoration: InputDecoration(
+              labelText: 'Reason',
+              labelStyle: TextStyle(color: reportRed),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: reportRed),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: reportRed, width: 2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedReason,
+                isExpanded: true,
+                menuWidth: reasonMenuWidth,
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: reportRed,
+                ),
+                dropdownColor: Colors.white,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.onSurface,
+                ),
+                items: [
+                  for (final (value, label) in _reasons)
+                    DropdownMenuItem(
+                      value: value,
+                      child: Text(label, maxLines: 2, softWrap: true),
+                    ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedReason = value;
+                      _showDetailsError = false;
+                    });
+                  }
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _detailsController,
+            maxLength: 1000,
+            maxLines: 4,
+            minLines: 3,
+            textCapitalization: TextCapitalization.sentences,
+            onChanged: (value) {
+              if (_showDetailsError && value.trim().isNotEmpty) {
+                setState(() => _showDetailsError = false);
+              }
+            },
+            decoration: InputDecoration(
+              labelText: _requiresSpecificReason
+                  ? 'Specific reason (required)'
+                  : 'Additional details (optional)',
+              alignLabelWithHint: true,
+              hintText: _requiresSpecificReason
+                  ? 'Please explain the specific issue...'
+                  : 'Describe what seems wrong...',
+              errorText: _requiresSpecificReason && _showDetailsError
+                  ? 'Please enter a specific reason.'
+                  : null,
+              filled: true,
+              fillColor: AppTheme.surfaceContainerLow,
+              contentPadding: const EdgeInsets.fromLTRB(14, 16, 14, 10),
+              counterStyle: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppTheme.onSurfaceVariant,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: AppTheme.outlineVariant),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: reportRed, width: 1.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+                backgroundColor: reportRed,
+                foregroundColor: AppTheme.onPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: _didSubmit ? null : _submit,
+              icon: const Icon(Icons.outlined_flag_rounded, size: 18),
+              label: const Text('Submit Report'),
+            ),
+            const SizedBox(height: 6),
+            TextButton(
+              style: TextButton.styleFrom(
+                minimumSize: const Size.fromHeight(44),
+                foregroundColor: AppTheme.onSurfaceVariant,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }

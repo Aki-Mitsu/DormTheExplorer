@@ -486,8 +486,9 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
                   _setListingAvailability(dormitories[index], value),
               onTap: () =>
                   _showDormitoryDetails(dormitories[index], isOwnListing: true),
-              onEdit: () =>
-                  _showDormitoryDetails(dormitories[index], isOwnListing: true),
+              onEdit: () => _openAddDormitory(
+                existingDormitory: dormitories[index],
+              ),
               onDelete: () => _deleteListing(dormitories[index]),
             ),
           ],
@@ -543,6 +544,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
                 dormitory: dormitory,
                 canReview: !_isLandlord,
                 canBookmark: !_isLandlord,
+                canReport: !_isLandlord,
                 isFavorite: _viewModel.isFavorite(dormitory.id),
                 onFavoriteChanged: (isFavorite) =>
                     _viewModel.setFavorite(dormitory.id, isFavorite),

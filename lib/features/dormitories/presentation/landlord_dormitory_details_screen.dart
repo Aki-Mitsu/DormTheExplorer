@@ -8,6 +8,7 @@ import '../../../theme/app_theme.dart';
 import '../data/dormitory_repository.dart';
 import '../domain/dormitory.dart';
 import 'add_dormitory_screen.dart';
+import 'widgets/dormitory_photo_viewer.dart';
 
 class LandlordDormitoryDetailsScreen extends StatefulWidget {
   const LandlordDormitoryDetailsScreen({
@@ -312,6 +313,12 @@ class _LandlordDormitoryDetailsScreenState
     );
   }
 
+  Future<void> _openPhotoViewer() => showDormitoryPhotoViewer(
+    context,
+    photoUrls: _dormitory.photoUrls,
+    initialIndex: _selectedPhoto,
+  );
+
   Widget _photoGallery() {
     final photos = _dormitory.photoUrls;
     return Container(
@@ -329,68 +336,74 @@ class _LandlordDormitoryDetailsScreenState
       ),
       child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: AspectRatio(
-              aspectRatio: 16 / 10,
-              child: photos.isEmpty
-                  ? Container(
-                      color: AppTheme.surfaceContainer,
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.apartment_rounded,
-                        size: 48,
-                        color: AppTheme.outline,
-                      ),
-                    )
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        PageView.builder(
-                          controller: _photoController,
-                          itemCount: photos.length,
-                          onPageChanged: (index) =>
-                              setState(() => _selectedPhoto = index),
-                          itemBuilder: (context, index) => Image.network(
-                            photos[index],
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  color: AppTheme.surfaceContainer,
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.broken_image_outlined,
-                                    size: 38,
-                                    color: AppTheme.outline,
+          GestureDetector(
+            onTap: photos.isEmpty ? null : _openPhotoViewer,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: AspectRatio(
+                aspectRatio: 16 / 10,
+                child: photos.isEmpty
+                    ? Container(
+                        color: AppTheme.surfaceContainer,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.apartment_rounded,
+                          size: 48,
+                          color: AppTheme.outline,
+                        ),
+                      )
+                    : Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          PageView.builder(
+                            controller: _photoController,
+                            physics: const PageScrollPhysics(),
+                            itemCount: photos.length,
+                            onPageChanged: (index) =>
+                                setState(() => _selectedPhoto = index),
+                            itemBuilder: (context, index) => Image.network(
+                              photos[index],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    color: AppTheme.surfaceContainer,
+                                    alignment: Alignment.center,
+                                    child: const Icon(
+                                      Icons.broken_image_outlined,
+                                      size: 38,
+                                      color: AppTheme.outline,
+                                    ),
                                   ),
+                            ),
+                          ),
+                          Positioned(
+                            right: 10,
+                            bottom: 10,
+                            child: IgnorePointer(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
-                          ),
-                        ),
-                        Positioned(
-                          right: 10,
-                          bottom: 10,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.inverseSurface.withValues(
-                                alpha: 0.82,
-                              ),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              '${_selectedPhoto + 1} / ${photos.length} Photos',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
-                                    color: AppTheme.surfaceContainerLowest,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.inverseSurface.withValues(
+                                    alpha: 0.82,
                                   ),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  '${_selectedPhoto + 1} / ${photos.length} Photos',
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
+                                        color: AppTheme.surfaceContainerLowest,
+                                      ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+              ),
             ),
           ),
           if (photos.length > 1) ...[

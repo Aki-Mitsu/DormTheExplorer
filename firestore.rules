@@ -12,6 +12,12 @@ service cloud.firestore {
           .data.role == 'landlord';
     }
 
+    function isSeeker() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid))
+          .data.role == 'seeker';
+    }
+
     function ownsListing() {
       return signedIn()
         && resource.data.landlordId == request.auth.uid;
@@ -88,6 +94,44 @@ service cloud.firestore {
       ) || validAverageRatingUpdate();
 
       allow delete: if isLandlord() && ownsListing();
+
+      match /reports/{reporterId} {
+        allow get: if signedIn() && request.auth.uid == reporterId;
+        allow list: if false;
+
+        allow create: if isSeeker()
+          && request.auth.uid == reporterId
+          && get(/databases/$(database)/documents/dormitories/$(dormitoryId))
+            .data.status == 'approved'
+          && get(/databases/$(database)/documents/dormitories/$(dormitoryId))
+            .data.landlordId != request.auth.uid
+          && request.resource.data.keys().hasAll([
+            'reporterId',
+            'reason',
+            'details',
+            'createdAt'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'reporterId',
+            'reason',
+            'details',
+            'createdAt'
+          ])
+          && request.resource.data.reporterId == request.auth.uid
+          && request.resource.data.reason in [
+            'incorrect_information',
+            'unavailable_property',
+            'misleading_photos',
+            'inappropriate_content',
+            'suspicious_listing',
+            'other'
+          ]
+          && request.resource.data.details is string
+          && request.resource.data.details.size() <= 1000
+          && request.resource.data.createdAt == request.time;
+
+        allow update, delete: if false;
+      }
 
       match /reviews/{reviewId} {
         allow read: if signedIn()
