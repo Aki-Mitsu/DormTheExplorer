@@ -53,6 +53,11 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
     Navigator.of(context).pop(_viewModel.filters);
   }
 
+  void _resetAndApply() {
+    _clearAll();
+    _applyFilters();
+  }
+
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: _viewModel,
@@ -154,6 +159,25 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            Tooltip(
+              message: 'Clear all filters and return to results',
+              child: TextButton(
+                onPressed: _resetAndApply,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.primaryDeep,
+                  minimumSize: const Size(0, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Reset',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppTheme.primaryDeep,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ],
