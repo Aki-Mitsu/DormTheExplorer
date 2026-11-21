@@ -562,6 +562,8 @@ class _LandlordDormitoryDetailsScreenState
   }
 
   Widget _overviewCard() {
+    final roomTypes = DormRoomType.currentLabels(_dormitory.roomTypes);
+
     return _sectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -620,15 +622,46 @@ class _LandlordDormitoryDetailsScreenState
                           : AppTheme.error,
                     ),
                   ),
-                  if (_dormitory.roomTypes.isNotEmpty)
+                  if (roomTypes.isNotEmpty)
                     SizedBox(
                       width: constraints.maxWidth,
-                      child: _metricTile(
-                        label: 'ROOM CONFIGURATIONS',
-                        value: _dormitory.roomTypes.join(' • '),
-                        subtitle: '',
-                        color: AppTheme.onSurface,
-                        icon: Icons.bed_outlined,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.bed_outlined,
+                              size: 18,
+                              color: AppTheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'ROOM TYPE',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: AppTheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.6,
+                                  ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                roomTypes.join(' • '),
+                                textAlign: TextAlign.end,
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 

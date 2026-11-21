@@ -447,64 +447,68 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     );
   }
 
-  Widget _roomTypes() => _section(
-    'Room Types',
-    widget.dormitory.roomTypes.isEmpty
-        ? const _EmptyNote(
-            icon: Icons.bed_outlined,
-            text: 'Room options will appear when the listing is added.',
-          )
-        : Column(
-            children: List.generate(
-              widget.dormitory.roomTypes.length,
-              (index) {
-                final roomType = widget.dormitory.roomTypes[index];
-                final isLast = index == widget.dormitory.roomTypes.length - 1;
+  Widget _roomTypes() {
+    final roomTypes = DormRoomType.currentLabels(widget.dormitory.roomTypes);
 
-                return Padding(
-                  padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
-                  child: Container(
-                    constraints: const BoxConstraints(minHeight: 52),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.bed_outlined,
-                          size: 20,
-                          color: AppTheme.secondary,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            roomType,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: AppTheme.onSurface,
-                                  fontWeight: FontWeight.w600,
-                                ),
+    return _section(
+      'Room Types',
+      roomTypes.isEmpty
+          ? const _EmptyNote(
+              icon: Icons.bed_outlined,
+              text: 'Room options will appear when the listing is added.',
+            )
+          : Column(
+              children: List.generate(
+                roomTypes.length,
+                (index) {
+                  final roomType = roomTypes[index];
+                  final isLast = index == roomTypes.length - 1;
+
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+                    child: Container(
+                      constraints: const BoxConstraints(minHeight: 52),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.bed_outlined,
+                            size: 20,
+                            color: AppTheme.secondary,
                           ),
-                        ),
-                        const Icon(
-                          Icons.check_circle_rounded,
-                          size: 18,
-                          color: AppTheme.secondary,
-                        ),
-                      ],
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              roomType,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: AppTheme.onSurface,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            size: 18,
+                            color: AppTheme.secondary,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-              growable: false,
+                  );
+                },
+                growable: false,
+              ),
             ),
-          ),
-  );
+    );
+  }
 
   Widget _amenities() {
     const options = <(String, IconData)>[

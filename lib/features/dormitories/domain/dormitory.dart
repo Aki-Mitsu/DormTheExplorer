@@ -1,13 +1,30 @@
 enum DormRoomType {
-  singleRoom('Single Room'),
-  doubleSharing('Double Sharing'),
-  tripleSharing('Triple Sharing'),
-  quadrupleSharing('Quadruple Sharing'),
+  soloRoom('Solo Room'),
   bedspace('Bedspace');
 
   const DormRoomType(this.label);
 
   final String label;
+
+  static DormRoomType? fromSavedValue(String value) {
+    final normalized = value.toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9]'),
+      '',
+    );
+    return switch (normalized) {
+      'soloroom' || 'singleroom' => DormRoomType.soloRoom,
+      'bedspace' => DormRoomType.bedspace,
+      _ => null,
+    };
+  }
+
+  static List<String> currentLabels(Iterable<String> savedValues) =>
+      savedValues
+          .map(fromSavedValue)
+          .whereType<DormRoomType>()
+          .map((roomType) => roomType.label)
+          .toSet()
+          .toList(growable: false);
 }
 
 class Dormitory {

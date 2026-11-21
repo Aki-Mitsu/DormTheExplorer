@@ -74,8 +74,9 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
     _availableSlotsController.text = dormitory.availableSlots.toString();
     _descriptionController.text = dormitory.description;
     _amenities.addAll(dormitory.amenities);
-    _roomType = DormRoomType.values
-        .where((type) => dormitory.roomTypes.contains(type.label))
+    _roomType = dormitory.roomTypes
+        .map(DormRoomType.fromSavedValue)
+        .whereType<DormRoomType>()
         .firstOrNull;
     _photoUrls.addAll(dormitory.photoUrls);
     if (dormitory.latitude != null && dormitory.longitude != null) {
@@ -821,47 +822,24 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   );
 
   Widget _roomTypesSection() {
-    final roomTypes = DormRoomType.values;
-    final rowCount = (roomTypes.length + 1) ~/ 2;
-
     return _section(
       title: 'Room Types',
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Select one room configuration.',
+            'Choose one room type.',
             style: Theme.of(context).textTheme.bodySmall
                 ?.copyWith(color: AppTheme.onSurfaceVariant),
           ),
-          const SizedBox(height: 10),
-          ...List.generate(rowCount, (rowIndex) {
-            final firstIndex = rowIndex * 2;
-            final first = roomTypes[firstIndex];
-            final secondIndex = firstIndex + 1;
-            final hasSecond = secondIndex < roomTypes.length;
-
-            return Padding(
-              padding: EdgeInsets.only(top: rowIndex == 0 ? 0 : 8),
-              child: Row(
-                children: [
-                  if (!hasSecond) const Expanded(child: SizedBox()),
-                  if (hasSecond)
-                    Expanded(child: _roomTypeOption(first))
-                  else
-                    Expanded(
-                      flex: 2,
-                      child: _roomTypeOption(first),
-                    ),
-                  if (hasSecond) ...[
-                    const SizedBox(width: 8),
-                    Expanded(child: _roomTypeOption(roomTypes[secondIndex])),
-                  ],
-                  if (!hasSecond) const Expanded(child: SizedBox()),
-                ],
-              ),
-            );
-          }),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: DormRoomType.values
+                .map(_roomTypeOption)
+                .toList(growable: false),
+          ),
         ],
       ),
     );
@@ -883,7 +861,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
               }),
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 46),
+          constraints: const BoxConstraints(minHeight: 42),
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -894,16 +872,13 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
             ),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Text(
-                  roomType.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: selected ? AppTheme.onPrimary : AppTheme.onSurface,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  ),
+              Text(
+                roomType.label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: selected ? AppTheme.onPrimary : AppTheme.onSurface,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
               const SizedBox(width: 6),

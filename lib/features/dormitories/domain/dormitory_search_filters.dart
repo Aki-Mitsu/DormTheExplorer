@@ -67,9 +67,8 @@ class DormitorySearchFilters {
     }
 
     if (roomType case final selectedRoomType?) {
-      final selectedValue = _normalize(selectedRoomType.label);
       final hasRoomType = dormitory.roomTypes.any(
-        (type) => _normalize(type) == selectedValue,
+        (type) => DormRoomType.fromSavedValue(type) == selectedRoomType,
       );
       if (!hasRoomType) return false;
     }
