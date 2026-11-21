@@ -454,17 +454,55 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
             icon: Icons.bed_outlined,
             text: 'Room options will appear when the listing is added.',
           )
-        : Wrap(
-            spacing: 8,
-            children: widget.dormitory.roomTypes
-                .map(
-                  (room) => Chip(
-                    avatar: const Icon(Icons.bed_outlined, size: 17),
-                    label: Text(room),
-                    backgroundColor: AppTheme.surfaceContainerLow,
+        : Column(
+            children: List.generate(
+              widget.dormitory.roomTypes.length,
+              (index) {
+                final roomType = widget.dormitory.roomTypes[index];
+                final isLast = index == widget.dormitory.roomTypes.length - 1;
+
+                return Padding(
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 52),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.bed_outlined,
+                          size: 20,
+                          color: AppTheme.secondary,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            roomType,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: AppTheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          size: 18,
+                          color: AppTheme.secondary,
+                        ),
+                      ],
+                    ),
                   ),
-                )
-                .toList(growable: false),
+                );
+              },
+              growable: false,
+            ),
           ),
   );
 
@@ -488,7 +526,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         physics: const NeverScrollableScrollPhysics(),
         itemCount: options.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: MediaQuery.sizeOf(context).width < 400 ? 1 : 2,
+          crossAxisCount: 2,
           mainAxisExtent: 62,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
