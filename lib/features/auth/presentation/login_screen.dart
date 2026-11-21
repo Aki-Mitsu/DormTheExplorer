@@ -104,10 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            AuthPageHeader(
-              title: 'Sign In',
-              onBack: () => Navigator.maybePop(context),
-            ),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) => SingleChildScrollView(
