@@ -501,6 +501,9 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                            ),
                             onPressed: isLocating || isResolvingAddress
                                 ? null
                                 : () => Navigator.pop(dialogContext),
@@ -510,6 +513,10 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(48),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                            ),
                             onPressed: isLocating || isResolvingAddress
                                 ? null
                                 : confirmLocation,
@@ -522,7 +529,10 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                                       color: AppTheme.onPrimary,
                                     ),
                                   )
-                                : const Text('Use this location'),
+                                : const FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text('Use this location'),
+                                  ),
                           ),
                         ),
                       ],
@@ -615,6 +625,8 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
         landlordPhone: landlordPhone == null || landlordPhone.isEmpty
             ? widget.existingDormitory?.landlordPhone
             : landlordPhone,
+        landlordPhotoUrl:
+            currentUser.photoURL ?? widget.existingDormitory?.landlordPhotoUrl,
       );
       final existingDormitory = widget.existingDormitory;
       if (existingDormitory == null) {
@@ -639,6 +651,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
             longitude: dormitory.longitude,
             landlordName: dormitory.landlordName,
             landlordPhone: dormitory.landlordPhone,
+            landlordPhotoUrl: dormitory.landlordPhotoUrl,
             roomTypes: dormitory.roomTypes,
             utilitiesIncluded: existingDormitory.utilitiesIncluded,
           ),
@@ -818,7 +831,11 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
     );
   }
 
-  Widget _section({required String title, required Widget child}) {
+  Widget _section({
+    required String title,
+    required Widget child,
+    Widget? trailing,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -835,20 +852,28 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text.rich(
-            TextSpan(
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
-              children: [
-                TextSpan(text: title),
-                if (title == 'Description' ||
-                    title == 'Dormitory Photos')
-                  const TextSpan(
-                    text: ' *',
-                    style: TextStyle(color: AppTheme.primaryContainer),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text.rich(
+                  TextSpan(
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                    children: [
+                      TextSpan(text: title),
+                      if (title == 'Description' ||
+                          title == 'Dormitory Photos')
+                        const TextSpan(
+                          text: ' *',
+                          style: TextStyle(color: AppTheme.primaryContainer),
+                        ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
           ),
           const SizedBox(height: 16),
           child,
@@ -875,12 +900,16 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
         label: _requiredLabel(label),
         hintText: hint,
         prefixIcon: Icon(icon, size: 20),
+        prefixIconConstraints: const BoxConstraints(
+          minWidth: 36,
+          minHeight: 48,
+        ),
         prefixText: prefixText,
         helperText: helperText,
         filled: true,
         fillColor: AppTheme.surfaceContainerLow,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
+          horizontal: 10,
           vertical: 13,
         ),
         enabledBorder: OutlineInputBorder(
@@ -1132,21 +1161,14 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   Widget _photosSection() {
     return _section(
       title: 'Dormitory Photos',
+      trailing: Text(
+        '${_photoUrls.length} / $_maxPhotos uploaded',
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: AppTheme.onSurfaceVariant),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${_photoUrls.length} / $_maxPhotos uploaded',
-                  textAlign: TextAlign.end,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: AppTheme.onSurfaceVariant),
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 10),
           InkWell(
             onTap: _isUploadingPhotos || _isSaving ? null : _pickPhotos,
