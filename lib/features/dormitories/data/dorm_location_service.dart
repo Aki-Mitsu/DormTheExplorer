@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
+import 'batangas_city_boundary.dart';
 enum DormLocationIssue {
   servicesDisabled,
   permissionDenied,
@@ -26,6 +27,9 @@ class DormLocationService {
 
   final http.Client _client;
   DateTime? _lastReverseGeocodeRequest;
+
+  bool isWithinBatangasCity(LatLng point) =>
+      BatangasCityBoundary.contains(point);
 
   Future<LatLng> getCurrentLocation() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
