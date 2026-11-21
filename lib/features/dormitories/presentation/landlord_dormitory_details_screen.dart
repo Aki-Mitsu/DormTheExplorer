@@ -28,12 +28,12 @@ class LandlordDormitoryDetailsScreen extends StatefulWidget {
 class _LandlordDormitoryDetailsScreenState
     extends State<LandlordDormitoryDetailsScreen> {
   static const List<(String, String, IconData)> _amenityOptions = [
-    ('wifi', 'Wi-Fi', Icons.wifi_rounded),
-    ('own_cr', 'Own CR', Icons.shower_rounded),
-    ('kitchen', 'Kitchen', Icons.countertops_rounded),
-    ('parking', 'Parking', Icons.local_parking_rounded),
+    ('wifi', 'WiFi', Icons.wifi_rounded),
+    ('own_cr', 'Own CR', Icons.bathtub_outlined),
     ('aircon', 'Air Conditioning', Icons.ac_unit_rounded),
-    ('laundry', 'Laundry', Icons.local_laundry_service_rounded),
+    ('kitchen', 'Kitchen', Icons.countertops_outlined),
+    ('laundry', 'Laundry', Icons.local_laundry_service_outlined),
+    ('parking', 'Parking', Icons.local_parking_rounded),
   ];
 
   final DormitoryRepository _repository = DormitoryRepository();
@@ -562,10 +562,6 @@ class _LandlordDormitoryDetailsScreenState
   }
 
   Widget _overviewCard() {
-    final utilitiesLabel = _dormitory.utilitiesIncluded
-        ? 'Utilities included'
-        : 'Not marked as included';
-
     return _sectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -635,18 +631,7 @@ class _LandlordDormitoryDetailsScreenState
                         icon: Icons.bed_outlined,
                       ),
                     ),
-                  SizedBox(
-                    width: constraints.maxWidth,
-                    child: _metricTile(
-                      label: 'UTILITIES BILLING',
-                      value: utilitiesLabel,
-                      subtitle: '',
-                      color: _dormitory.utilitiesIncluded
-                          ? AppTheme.secondary
-                          : AppTheme.onSurfaceVariant,
-                      icon: Icons.bolt_outlined,
-                    ),
-                  ),
+
                 ],
               );
             },
@@ -678,48 +663,35 @@ class _LandlordDormitoryDetailsScreenState
 
   Widget _amenitiesCard() {
     final selected = _dormitory.amenities.map(_canonicalAmenity).toSet();
-    return _sectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _sectionTitle(
-                  Icons.format_list_bulleted_rounded,
-                  'Supported Amenities',
-                ),
-              ),
-              Text(
-                '${selected.intersection(_amenityOptions.map((item) => item.$1).toSet()).length} of ${_amenityOptions.length} active',
-                style: Theme.of(context).textTheme.labelSmall
-                    ?.copyWith(color: AppTheme.onSurfaceVariant),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Amenities Overview',
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _amenityOptions.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisExtent: 62,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
           ),
-          const SizedBox(height: 10),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final tileWidth = (constraints.maxWidth - 10) / 2;
-              return Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (final (key, label, icon) in _amenityOptions)
-                    SizedBox(
-                      width: tileWidth,
-                      child: _amenityTile(
-                        label: label,
-                        icon: icon,
-                        available: selected.contains(key),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
+          itemBuilder: (context, index) {
+            final (key, label, icon) = _amenityOptions[index];
+            return _amenityTile(
+              label: label,
+              icon: icon,
+              available: selected.contains(key),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -917,14 +889,18 @@ class _LandlordDormitoryDetailsScreenState
     required IconData icon,
     required bool available,
   }) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
     decoration: BoxDecoration(
-      color: AppTheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(10),
+      color: AppTheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(16),
     ),
     child: Row(
       children: [
-        Icon(icon, size: 18, color: AppTheme.onSurface),
+        Icon(
+          icon,
+          size: 19,
+          color: available ? AppTheme.secondary : AppTheme.outline,
+        ),
         const SizedBox(width: 7),
         Expanded(
           child: Text(
@@ -932,14 +908,18 @@ class _LandlordDormitoryDetailsScreenState
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: available ? AppTheme.onSurface : AppTheme.onSurfaceVariant,
+              color: available
+                  ? AppTheme.onSurface
+                  : AppTheme.onSurfaceVariant,
             ),
           ),
         ),
         Icon(
-          available ? Icons.check_circle_rounded : Icons.cancel_rounded,
+          available
+              ? Icons.check_circle_rounded
+              : Icons.remove_circle_outline_rounded,
           size: 17,
-          color: available ? AppTheme.secondary : AppTheme.error,
+          color: available ? AppTheme.secondary : AppTheme.outline,
         ),
       ],
     ),
