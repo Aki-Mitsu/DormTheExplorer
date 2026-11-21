@@ -7,7 +7,6 @@ import '../data/dorm_review_repository.dart';
 import '../data/osrm_routing_service.dart';
 import '../domain/dorm_review.dart';
 import '../domain/dorm_route.dart';
-import '../domain/route_destination.dart';
 
 class DormDetailsViewModel extends ChangeNotifier {
   DormDetailsViewModel({
@@ -49,7 +48,7 @@ class DormDetailsViewModel extends ChangeNotifier {
 
   Future<void> loadRoute({
     required LatLng origin,
-    required RouteDestination destination,
+    required LatLng destination,
   }) async {
     final requestId = ++_routeRequestId;
     isLoadingRoute = true;
@@ -60,7 +59,7 @@ class DormDetailsViewModel extends ChangeNotifier {
     try {
       final nextRoute = await routingService.getDrivingRoute(
         origin: origin,
-        destination: destination.location,
+        destination: destination,
       );
       if (requestId == _routeRequestId) route = nextRoute;
     } catch (error) {

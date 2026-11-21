@@ -16,6 +16,7 @@ import '../domain/dormitory.dart';
 import '../domain/route_destination.dart';
 import 'dorm_details_view_model.dart';
 import 'widgets/dorm_location_map.dart';
+import 'widgets/campus_selection_bottom_sheet.dart';
 import 'widgets/dormitory_photo_viewer.dart';
 
 class DormDetailsScreen extends StatefulWidget {
@@ -93,10 +94,11 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   Future<void> _loadRoute() {
     if (!_hasLocation && !widget.canEditLocation) return Future<void>.value();
     return _viewModel.loadRoute(
-      origin: _dormLocation,
-      destination: _destination,
+      origin: _destination.location,
+      destination: _dormLocation,
     );
   }
+
 
   @override
   void dispose() {
@@ -687,28 +689,11 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                 ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
-          DropdownButtonFormField<RouteDestination>(
-            initialValue: _destination,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Route to',
-              prefixIcon: Icon(Icons.school_outlined),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-            ),
-            items: RouteDestination.campuses
-                .map(
-                  (campus) => DropdownMenuItem(
-                    value: campus,
-                    child: Text(campus.name, overflow: TextOverflow.ellipsis),
-                  ),
-                )
-                .toList(growable: false),
-            onChanged: (value) {
-              if (value == null) return;
-              setState(() => _destination = value);
+          CampusRouteDropdown(
+            selectedCampus: _destination,
+            onChanged: (campus) {
+              if (campus == _destination) return;
+              setState(() => _destination = campus);
               unawaited(_loadRoute());
             },
           ),
@@ -808,66 +793,61 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         color: AppTheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final destination = Text(
-            'To ${_destination.name}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelMedium,
-          );
-          final distance = Text(
-            route.distanceLabel,
-            style: Theme.of(context).textTheme.labelMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
-          );
-          final duration = Text(
-            route.durationLabel,
-            style: Theme.of(context).textTheme.labelSmall
-                ?.copyWith(color: AppTheme.onSurfaceVariant),
-          );
-
-          if (constraints.maxWidth < 360) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.alt_route_rounded,
-                      color: AppTheme.primaryContainer,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(child: destination),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const SizedBox(width: 32),
-                    distance,
-                    const Spacer(),
-                    duration,
-                  ],
-                ),
-              ],
-            );
-          }
-
-          return Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
               const Icon(
                 Icons.alt_route_rounded,
                 color: AppTheme.primaryContainer,
               ),
               const SizedBox(width: 8),
-              Expanded(child: destination),
-              distance,
-              const SizedBox(width: 10),
-              duration,
+              Expanded(
+                child: Text(
+                  'From ${_destination.name}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+              ),
+              Text(
+                route.distanceLabel,
+                style: Theme.of(context).textTheme.labelMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _TravelTimeEstimate(
+                icon: Icons.directions_walk_rounded,
+                label: 'Walk ${route.walkingDurationLabel}',
+              ),
+              _TravelTimeEstimate(
+                icon: Icons.directions_bike_rounded,
+                label: 'Bike ${route.bikingDurationLabel}',
+              ),
+              _TravelTimeEstimate(
+                icon: Icons.directions_car_rounded,
+                label: 'Drive ${route.drivingDurationLabel}',
+              ),
+              _TravelTimeEstimate(
+                icon: Icons.two_wheeler_rounded,
+                label: 'Motorcycle ${route.motorcycleDurationLabel}',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Walking and biking use typical speeds; driving and motorcycle use the OSRM road-route estimate.',
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: AppTheme.onSurfaceVariant),
+          ),
+        ],
       ),
     );
   }
@@ -1316,6 +1296,37 @@ class _AvailabilityBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+class _TravelTimeEstimate extends StatelessWidget {
+  const _TravelTimeEstimate({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    decoration: BoxDecoration(
+      color: AppTheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppTheme.outlineVariant),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 17, color: AppTheme.primary),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: AppTheme.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _EmptyNote extends StatelessWidget {
