@@ -22,7 +22,8 @@ class CreateAccountScreen extends StatefulWidget {
   State<CreateAccountScreen> createState() => _CreateAccountScreenState();
 }
 
-class _CreateAccountScreenState extends State<CreateAccountScreen> {
+class _CreateAccountScreenState extends State<CreateAccountScreen>
+    with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
   final _nameController = TextEditingController();
@@ -35,10 +36,28 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   bool _acceptedTerms = false;
   bool _showTermsError = false;
   bool _isSubmitting = false;
+  bool _isCheckingVerification = false;
+  bool _pendingVerification = false;
+  bool _emailVerified = false;
+  String? _verificationEmail;
   String _role = 'seeker';
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _pendingVerification) {
+      _checkEmailVerification(showMessage: false);
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
@@ -58,6 +77,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   Future<void> _submit() async {
     if (_isSubmitting) return;
+    if (_pendingVerification) {
+      await _checkEmailVerification();
+      return;
+    }
     final isValid = _formKey.currentState?.validate() ?? false;
     setState(() => _showTermsError = !_acceptedTerms);
     if (!isValid || !_acceptedTerms) return;
@@ -83,12 +106,17 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         role: _role,
       );
       if (!mounted) return;
+      setState(() {
+        _pendingVerification = true;
+        _verificationEmail = _emailController.text.trim();
+      });
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(content: Text('Account created successfully.')),
+          const SnackBar(
+            content: Text('Verification link sent. Check your email.'),
+          ),
         );
-      Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -97,6 +125,148 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  Future<void> _checkEmailVerification({bool showMessage = true}) async {
+    if (_isCheckingVerification) return;
+    setState(() => _isCheckingVerification = true);
+    try {
+      final verified = await _authService.refreshEmailVerification();
+      if (!mounted) return;
+      setState(() => _emailVerified = verified);
+      if (showMessage) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                verified
+                    ? 'Email verified. Finish your registration.'
+                    : 'Email is not verified yet. Open the link in your inbox.',
+              ),
+            ),
+          );
+      }
+    } catch (error) {
+      if (mounted && showMessage) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(AuthService.messageFor(error))),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingVerification = false);
+    }
+  }
+
+  Future<void> _resendVerificationEmail() async {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+    try {
+      await _authService.resendVerificationEmail();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('A new verification link was sent.')),
+        );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(AuthService.messageFor(error))),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _finishRegistration() {
+    if (!_emailVerified) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Widget _emailVerificationCard() {
+    final color = _emailVerified ? AppTheme.secondary : AppTheme.primaryContainer;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
+      child: AuthFormCard(
+        padding: const EdgeInsets.all(16),
+        radius: 16,
+        showShadow: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  _emailVerified
+                      ? Icons.verified_rounded
+                      : Icons.mark_email_unread_outlined,
+                  color: color,
+                  size: 26,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _emailVerified ? 'Email verified' : 'Verify your email',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _emailVerified
+                            ? 'Your email is confirmed. Finish creating your account.'
+                            : 'Open the verification link sent to '
+                                '${_verificationEmail ?? _emailController.text.trim()}.',
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: AppTheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (_emailVerified)
+              FilledButton.icon(
+                onPressed: _finishRegistration,
+                icon: const Icon(Icons.check_rounded),
+                label: const Text('Finish Registration'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.secondary,
+                  foregroundColor: Colors.white,
+                ),
+              )
+            else ...[
+              FilledButton(
+                onPressed: _isCheckingVerification
+                    ? null
+                    : () => _checkEmailVerification(),
+                child: _isCheckingVerification
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text("I've verified my email"),
+              ),
+              TextButton(
+                onPressed: _isSubmitting ? null : _resendVerificationEmail,
+                child: const Text('Resend verification link'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -400,44 +570,47 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               ),
                             ),
                           ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: FilledButton(
-                              onPressed: _isSubmitting ? null : _submit,
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppTheme.primaryContainer,
-                                foregroundColor: AppTheme.onPrimary,
-                                elevation: 5,
-                                shadowColor: AppTheme.primary.withValues(
-                                  alpha: 0.24,
+                        if (_pendingVerification)
+                          _emailVerificationCard()
+                        else
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: FilledButton(
+                                onPressed: _isSubmitting ? null : _submit,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryContainer,
+                                  foregroundColor: AppTheme.onPrimary,
+                                  elevation: 5,
+                                  shadowColor: AppTheme.primary.withValues(
+                                    alpha: 0.24,
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    _isSubmitting
-                                        ? 'Creating Account…'
-                                        : 'Create Account',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge
-                                        ?.copyWith(color: AppTheme.onPrimary),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(
-                                    Icons.arrow_forward_rounded,
-                                    size: 18,
-                                    color: AppTheme.onPrimary,
-                                  ),
-                                ],
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _isSubmitting
+                                          ? 'Creating Account…'
+                                          : 'Create Account',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(color: AppTheme.onPrimary),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 18,
+                                      color: AppTheme.onPrimary,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
                           child: Wrap(
