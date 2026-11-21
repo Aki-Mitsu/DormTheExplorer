@@ -110,7 +110,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
           boxShadow: const [
             BoxShadow(
               color: Color(0x0A000000),
-              blurRadius: 8,
+              blurRadius: 6,
               offset: Offset(0, 1),
             ),
           ],
@@ -136,11 +136,12 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                 children: [
                   Text(
                     'DormTheExplorer',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: AppTheme.primaryDeep,
-                      fontSize: 10,
-                      height: 14 / 10,
-                      letterSpacing: 0.8,
+                      fontSize: 16,
+                      height: 20 / 16,
+                      letterSpacing: 0.5,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
@@ -155,20 +156,6 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                 ],
               ),
             ),
-            TextButton(
-              onPressed: _clearAll,
-              style: TextButton.styleFrom(
-                minimumSize: const Size(44, 44),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                foregroundColor: AppTheme.primaryDeep,
-                shape: const StadiumBorder(),
-                textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontSize: 14,
-                  height: 20 / 14,
-                ),
-              ),
-              child: const Text('Reset'),
-            ),
           ],
         ),
       ),
@@ -178,51 +165,69 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
   Widget _searchField() => Padding(
     padding: const EdgeInsets.only(top: 4, bottom: 8),
     child: Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 54,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x10000000),
-            blurRadius: 4,
+            color: Color(0x08000000),
+            blurRadius: 3,
             offset: Offset(0, 1),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          const Icon(
+      child: TextField(
+        controller: _searchController,
+        onChanged: _viewModel.updateQuery,
+        textInputAction: TextInputAction.search,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppTheme.onSurface,
+          fontSize: 16,
+          height: 22 / 16,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search by name or address...',
+          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppTheme.outline,
+            fontSize: 16,
+            height: 22 / 16,
+          ),
+          prefixIcon: const Icon(
             Icons.search_rounded,
             color: AppTheme.primaryDeep,
-            size: 22,
+            size: 24,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: _viewModel.updateQuery,
-              textInputAction: TextInputAction.search,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.onSurface,
-                fontSize: 14,
-                height: 20 / 14,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Search by name or address...',
-                hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.outline,
-                  fontSize: 14,
-                  height: 20 / 14,
-                ),
-                isDense: true,
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 52,
+            minHeight: 52,
+          ),
+          filled: true,
+          fillColor: AppTheme.surfaceContainerLowest,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 15,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppTheme.outline.withValues(alpha: 0.3),
             ),
           ),
-        ],
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppTheme.outline.withValues(alpha: 0.3),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: AppTheme.primaryDeep,
+              width: 1.5,
+            ),
+          ),
+        ),
       ),
     ),
   );
@@ -235,11 +240,8 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
           child: _RangeButton<DormPriceRange>(
             label: '₱1,000–₱3,000',
             selected: _viewModel.priceRange == DormPriceRange.budget,
-            onTap: () => _viewModel.selectPriceRange(
-              _viewModel.priceRange == DormPriceRange.budget
-                  ? null
-                  : DormPriceRange.budget,
-            ),
+            onTap: () =>
+                _viewModel.selectPriceRange(DormPriceRange.budget),
           ),
         ),
         const SizedBox(width: 8),
@@ -247,11 +249,8 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
           child: _RangeButton<DormPriceRange>(
             label: '₱3,000–₱5,000',
             selected: _viewModel.priceRange == DormPriceRange.midRange,
-            onTap: () => _viewModel.selectPriceRange(
-              _viewModel.priceRange == DormPriceRange.midRange
-                  ? null
-                  : DormPriceRange.midRange,
-            ),
+            onTap: () =>
+                _viewModel.selectPriceRange(DormPriceRange.midRange),
           ),
         ),
         const SizedBox(width: 8),
@@ -259,11 +258,8 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
           child: _RangeButton<DormPriceRange>(
             label: '₱5,000+',
             selected: _viewModel.priceRange == DormPriceRange.premium,
-            onTap: () => _viewModel.selectPriceRange(
-              _viewModel.priceRange == DormPriceRange.premium
-                  ? null
-                  : DormPriceRange.premium,
-            ),
+            onTap: () =>
+                _viewModel.selectPriceRange(DormPriceRange.premium),
           ),
         ),
       ],
@@ -278,11 +274,8 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
           child: _RangeButton<DormSlotRange>(
             label: '1–2',
             selected: _viewModel.slotRange == DormSlotRange.oneToTwo,
-            onTap: () => _viewModel.selectSlotRange(
-              _viewModel.slotRange == DormSlotRange.oneToTwo
-                  ? null
-                  : DormSlotRange.oneToTwo,
-            ),
+            onTap: () =>
+                _viewModel.selectSlotRange(DormSlotRange.oneToTwo),
           ),
         ),
         const SizedBox(width: 8),
@@ -290,11 +283,8 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
           child: _RangeButton<DormSlotRange>(
             label: '3–4',
             selected: _viewModel.slotRange == DormSlotRange.threeToFour,
-            onTap: () => _viewModel.selectSlotRange(
-              _viewModel.slotRange == DormSlotRange.threeToFour
-                  ? null
-                  : DormSlotRange.threeToFour,
-            ),
+            onTap: () =>
+                _viewModel.selectSlotRange(DormSlotRange.threeToFour),
           ),
         ),
         const SizedBox(width: 8),
@@ -302,11 +292,8 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
           child: _RangeButton<DormSlotRange>(
             label: '5+',
             selected: _viewModel.slotRange == DormSlotRange.fiveOrMore,
-            onTap: () => _viewModel.selectSlotRange(
-              _viewModel.slotRange == DormSlotRange.fiveOrMore
-                  ? null
-                  : DormSlotRange.fiveOrMore,
-            ),
+            onTap: () =>
+                _viewModel.selectSlotRange(DormSlotRange.fiveOrMore),
           ),
         ),
       ],
@@ -374,19 +361,19 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
         _CampusButton(
           label: 'Near Alangilan Campus',
           selected: _viewModel.campus == DormCampus.alangilan,
-          onTap: () => _viewModel.toggleCampus(DormCampus.alangilan),
+          onTap: () => _viewModel.selectCampus(DormCampus.alangilan),
         ),
         const SizedBox(height: 8),
         _CampusButton(
           label: 'Near Pablo Borbon Campus',
           selected: _viewModel.campus == DormCampus.pabloBorbon,
-          onTap: () => _viewModel.toggleCampus(DormCampus.pabloBorbon),
+          onTap: () => _viewModel.selectCampus(DormCampus.pabloBorbon),
         ),
         const SizedBox(height: 8),
         _CampusButton(
           label: 'Near LPU',
           selected: _viewModel.campus == DormCampus.lpu,
-          onTap: () => _viewModel.toggleCampus(DormCampus.lpu),
+          onTap: () => _viewModel.selectCampus(DormCampus.lpu),
         ),
       ],
     ),
@@ -404,8 +391,8 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
             boxShadow: const [
               BoxShadow(
                 color: Color(0x0F000000),
-                blurRadius: 20,
-                offset: Offset(0, -4),
+                blurRadius: 12,
+                offset: Offset(0, -3),
               ),
             ],
           ),

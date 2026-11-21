@@ -52,8 +52,8 @@ class SearchFiltersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleCampus(DormCampus value) {
-    _campus = _campus == value ? null : value;
+  void selectCampus(DormCampus value) {
+    _campus = value;
     notifyListeners();
   }
 
