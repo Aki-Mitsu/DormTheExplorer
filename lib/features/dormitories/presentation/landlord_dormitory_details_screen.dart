@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../app_notice.dart';
 import '../../../theme/app_theme.dart';
 import '../data/batangas_city_boundary.dart';
 import '../data/dormitory_repository.dart';
@@ -47,6 +48,7 @@ class _LandlordDormitoryDetailsScreenState
   late StreamSubscription<Dormitory?> _dormitorySubscription;
   int _selectedPhoto = 0;
   bool _isUpdating = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -60,7 +62,9 @@ class _LandlordDormitoryDetailsScreenState
             setState(() => _dormitory = dormitory);
           },
           onError: (Object error) {
-            if (mounted) _showMessage('Could not refresh this listing: $error');
+            if (mounted && !_isDeleting) {
+              _showMessage('Could not refresh this listing: $error');
+            }
           },
         );
   }
@@ -175,6 +179,7 @@ class _LandlordDormitoryDetailsScreenState
     );
     if (confirmed != true) return;
 
+    setState(() => _isDeleting = true);
     try {
       await _repository.deleteDormitory(
         dormitoryId: _dormitory.id,
@@ -182,7 +187,10 @@ class _LandlordDormitoryDetailsScreenState
       );
       if (mounted) Navigator.of(context).pop(true);
     } catch (error) {
-      if (mounted) _showMessage('Could not delete listing: $error');
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        _showMessage('Could not delete listing: $error');
+      }
     }
   }
 
@@ -248,7 +256,7 @@ class _LandlordDormitoryDetailsScreenState
                   ),
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
-                    onPressed: _isUpdating ? null : _deleteListing,
+                    onPressed: _isUpdating || _isDeleting ? null : _deleteListing,
                     icon: const Icon(Icons.delete_outline_rounded, size: 18),
                     label: const Text('Delete Dormitory Listing'),
                     style: OutlinedButton.styleFrom(
@@ -1036,11 +1044,7 @@ class _LandlordDormitoryDetailsScreenState
     return '₱$grouped';
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
+  void _showMessage(String message) => AppNotice.show(context, message);
 }
 
 class _AvailableSlotsDialog extends StatefulWidget {

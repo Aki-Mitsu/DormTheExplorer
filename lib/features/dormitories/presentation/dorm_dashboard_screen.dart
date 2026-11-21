@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../app_notice.dart';
 import '../../../theme/app_theme.dart';
 import '../data/dormitory_repository.dart';
 import '../domain/dormitory.dart';
@@ -80,17 +81,12 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       ),
     );
     if (!mounted || saved != true) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            existingDormitory == null
-                ? 'Dormitory listing added.'
-                : 'Dormitory listing updated.',
-          ),
-        ),
-      );
+    AppNotice.show(
+      context,
+      existingDormitory == null
+          ? 'Dormitory listing added.'
+          : 'Dormitory listing updated.',
+    );
   }
 
   Future<void> _setListingAvailability(
@@ -105,9 +101,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not update availability: $error')),
-      );
+      AppNotice.show(context, 'Could not update availability: $error');
     }
   }
 
@@ -163,13 +157,10 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         landlordId: widget.userId,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Listing deleted.')));
+      AppNotice.show(context, 'Dorm deleted.');
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not delete listing: $error')),
-      );
+      AppNotice.show(context, 'Could not delete listing: $error');
     }
   }
 
@@ -541,12 +532,12 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
     );
   }
 
-  void _showDormitoryDetails(
+  Future<void> _showDormitoryDetails(
     Dormitory dormitory, {
     required bool isOwnListing,
-  }) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
+  }) async {
+    final wasDeleted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (context) => _isLandlord && isOwnListing
             ? LandlordDormitoryDetailsScreen(
                 dormitory: dormitory,
@@ -563,6 +554,9 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
               ),
       ),
     );
+
+    if (!mounted || wasDeleted != true) return;
+    AppNotice.show(context, 'Dorm deleted.');
   }
 }
 
