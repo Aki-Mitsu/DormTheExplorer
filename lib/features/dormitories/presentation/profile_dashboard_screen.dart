@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../services/auth_service.dart';
 import '../../../theme/app_theme.dart';
 import '../data/cloudinary_upload_service.dart';
 
@@ -178,6 +179,26 @@ class ProfileDashboardScreen extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
+                                vertical: 4,
+                              ),
+                              child: OutlinedButton.icon(
+                                onPressed: email.trim().isEmpty || email == '—'
+                                    ? null
+                                    : () => _sendPasswordReset(context, email),
+                                icon: const Icon(Icons.lock_reset_rounded),
+                                label: const Text('Reset Password'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppTheme.primaryContainer,
+                                  side: const BorderSide(
+                                    color: AppTheme.primaryContainer,
+                                  ),
+                                  minimumSize: const Size.fromHeight(48),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
                                 vertical: 8,
                               ),
                               child: Container(
@@ -277,6 +298,62 @@ class ProfileDashboardScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _sendPasswordReset(
+    BuildContext context,
+    String email,
+  ) async {
+    final targetEmail = email.trim();
+    if (targetEmail.isEmpty || targetEmail == '—') return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reset password?'),
+        content: Text('Send a password reset link to $targetEmail?'),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('Send email'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await AuthService().resetPassword(targetEmail);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password reset email sent to $targetEmail.')),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AuthService.messageFor(error))),
+      );
+    }
+  }
+
   Future<void> _signOut(BuildContext context) async {
     final shouldSignOut = await showDialog<bool>(
       context: context,
@@ -316,7 +393,7 @@ class ProfileDashboardScreen extends StatelessWidget {
         ],
       ),
     );
-    if (shouldSignOut == true) await FirebaseAuth.instance.signOut();
+    if (shouldSignOut == true) await AuthService().signOut();
   }
 }
 
