@@ -177,6 +177,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
     final filters = await Navigator.of(context).push<DormitorySearchFilters>(
       MaterialPageRoute<DormitorySearchFilters>(
         builder: (_) => SearchFiltersScreen(
+          initialFilters: _viewModel.searchFilters,
           initialQuery: _viewModel.searchQuery,
         ),
       ),
