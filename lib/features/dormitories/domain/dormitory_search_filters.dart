@@ -16,6 +16,7 @@ class DormitorySearchFilters {
     this.slotRange,
     Set<String> amenities = const {},
     this.campus,
+    this.sortByRating = false,
   }) : amenities = Set.unmodifiable(amenities);
 
   final String query;
@@ -23,6 +24,7 @@ class DormitorySearchFilters {
   final DormSlotRange? slotRange;
   final Set<String> amenities;
   final DormCampus? campus;
+  final bool sortByRating;
 
   static const double campusRadiusKm = 3;
   static const Distance _distance = Distance();
@@ -90,13 +92,15 @@ class DormitorySearchFilters {
     return true;
   }
 
-  DormitorySearchFilters copyWith({String? query}) => DormitorySearchFilters(
-    query: query ?? this.query,
-    priceRange: priceRange,
-    slotRange: slotRange,
-    amenities: amenities,
-    campus: campus,
-  );
+  DormitorySearchFilters copyWith({String? query, bool? sortByRating}) =>
+      DormitorySearchFilters(
+        query: query ?? this.query,
+        priceRange: priceRange,
+        slotRange: slotRange,
+        amenities: amenities,
+        campus: campus,
+        sortByRating: sortByRating ?? this.sortByRating,
+      );
 
   static String _normalize(String value) =>
       value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
