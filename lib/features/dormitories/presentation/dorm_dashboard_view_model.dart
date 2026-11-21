@@ -62,7 +62,28 @@ class DormDashboardViewModel extends ChangeNotifier {
       }
     }
 
-    return results.toList(growable: false);
+    final filteredDormitories = results.toList(growable: false);
+    final filters = _searchFilters;
+    if (filters == null ||
+        !filters.sortByRating ||
+        !filters.hasActiveFilters) {
+      return filteredDormitories;
+    }
+
+    final rankedDormitories = <(int, Dormitory)>[
+      for (var index = 0; index < filteredDormitories.length; index++)
+        (index, filteredDormitories[index]),
+    ];
+    rankedDormitories.sort((left, right) {
+      final leftRating = left.$2.averageRating ?? -1;
+      final rightRating = right.$2.averageRating ?? -1;
+      final ratingOrder = rightRating.compareTo(leftRating);
+      return ratingOrder != 0 ? ratingOrder : left.$1.compareTo(right.$1);
+    });
+
+    return rankedDormitories
+        .map((entry) => entry.$2)
+        .toList(growable: false);
   }
 
   void updateSearch(String value) {
