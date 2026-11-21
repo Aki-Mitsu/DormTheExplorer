@@ -275,7 +275,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
                   onChanged: _viewModel.updateSearch,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Search dormitories in Batangas City...',
+                    hintText: 'Search dormitories',
                     hintStyle: Theme.of(context).textTheme.bodySmall
                         ?.copyWith(color: AppTheme.outline),
                     prefixIcon: const Icon(
@@ -1097,9 +1097,7 @@ class _DormitoryCard extends StatelessWidget {
                         ? dormitory.status.toUpperCase()
                         : dormitory.availableSlots <= 0
                         ? 'FULL'
-                        : dormitory.availableSlots == 1
-                        ? '1 slot left'
-                        : '${dormitory.availableSlots} slots left',
+                        : '${dormitory.availableSlots} ${dormitory.availableSlots == 1 ? 'slot' : 'slots'} available',
                     color: isLandlord
                         ? _statusColor(dormitory.status)
                         : dormitory.availableSlots <= 0
@@ -1161,7 +1159,7 @@ class _DormitoryCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     const Divider(height: 10, thickness: 0.7),
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
                           child: RichText(
@@ -1189,25 +1187,33 @@ class _DormitoryCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          dormitory.averageRating == null
-                              ? Icons.star_outline_rounded
-                              : Icons.star_rounded,
-                          color: dormitory.averageRating == null
-                              ? AppTheme.onSurfaceVariant
-                              : AppTheme.tertiaryContainer,
-                          size: 14,
-                        ),
-                        Text(
-                          dormitory.averageRating?.toStringAsFixed(1) ?? 'New',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: dormitory.averageRating == null
-                                    ? AppTheme.onSurfaceVariant
-                                    : AppTheme.tertiaryContainer,
-                                fontWeight: FontWeight.w700,
-                              ),
+                        const SizedBox(width: 6),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              dormitory.averageRating == null
+                                  ? Icons.star_outline_rounded
+                                  : Icons.star_rounded,
+                              color: dormitory.averageRating == null
+                                  ? AppTheme.onSurfaceVariant
+                                  : AppTheme.tertiaryContainer,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              dormitory.averageRating?.toStringAsFixed(1) ??
+                                  'New',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: dormitory.averageRating == null
+                                        ? AppTheme.onSurfaceVariant
+                                        : AppTheme.tertiaryContainer,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

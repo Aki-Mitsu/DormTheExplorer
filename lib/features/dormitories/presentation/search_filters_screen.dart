@@ -144,21 +144,16 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                 children: [
                   Text(
                     'DormTheExplorer',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppTheme.primaryDeep,
-                      fontSize: 16,
-                      height: 20 / 16,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppTheme.primaryContainer,
+                      fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
                     'Search & Filters',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: AppTheme.onSurface,
-                      fontSize: 18,
-                      height: 24 / 18,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -169,7 +164,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
               child: TextButton(
                 onPressed: _resetAndApply,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppTheme.primaryDeep,
+                  foregroundColor: AppTheme.primaryContainer,
                   minimumSize: const Size(0, 44),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -177,7 +172,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                 child: Text(
                   'Reset',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.primaryDeep,
+                    color: AppTheme.primaryContainer,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -489,7 +484,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                 flex: 2,
                 child: _BottomButton(
                   label: 'Apply Filters',
-                  background: AppTheme.primaryDeep,
+                  background: AppTheme.primaryContainer,
                   foreground: AppTheme.onPrimary,
                   icon: Icons.arrow_forward_rounded,
                   onTap: _applyFilters,
