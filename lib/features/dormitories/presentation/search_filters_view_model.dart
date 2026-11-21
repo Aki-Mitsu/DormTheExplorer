@@ -7,18 +7,10 @@ class SearchFiltersViewModel extends ChangeNotifier {
     DormitorySearchFilters? initialFilters,
     String initialQuery = '',
   }) : _query = initialFilters?.query ?? initialQuery,
-      _priceRange = initialFilters == null
-          ? DormPriceRange.budget
-          : initialFilters.priceRange,
-      _slotRange = initialFilters == null
-          ? DormSlotRange.oneToTwo
-          : initialFilters.slotRange,
-      _amenities = initialFilters == null
-          ? {'wifi', 'own_cr', 'aircon'}
-          : Set.of(initialFilters.amenities),
-      _campus = initialFilters == null
-          ? DormCampus.alangilan
-          : initialFilters.campus;
+      _priceRange = initialFilters?.priceRange,
+      _slotRange = initialFilters?.slotRange,
+      _amenities = Set.of(initialFilters?.amenities ?? const <String>{}),
+      _campus = initialFilters?.campus;
 
   String _query;
   DormPriceRange? _priceRange;
