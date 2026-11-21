@@ -1,3 +1,15 @@
+enum DormRoomType {
+  singleRoom('Single Room'),
+  doubleSharing('Double Sharing'),
+  tripleSharing('Triple Sharing'),
+  quadrupleSharing('Quadruple Sharing'),
+  bedspace('Bedspace');
+
+  const DormRoomType(this.label);
+
+  final String label;
+}
+
 class Dormitory {
   const Dormitory({
     required this.id,

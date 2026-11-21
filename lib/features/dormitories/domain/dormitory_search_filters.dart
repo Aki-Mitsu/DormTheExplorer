@@ -12,6 +12,7 @@ class DormitorySearchFilters {
     this.query = '',
     this.priceRange,
     this.slotRange,
+    this.roomType,
     Set<String> amenities = const {},
     this.campus,
     this.sortByRating = false,
@@ -20,6 +21,7 @@ class DormitorySearchFilters {
   final String query;
   final DormPriceRange? priceRange;
   final DormSlotRange? slotRange;
+  final DormRoomType? roomType;
   final Set<String> amenities;
   final RouteDestination? campus;
   final bool sortByRating;
@@ -31,6 +33,7 @@ class DormitorySearchFilters {
       query.trim().isNotEmpty ||
       priceRange != null ||
       slotRange != null ||
+      roomType != null ||
       amenities.isNotEmpty ||
       campus != null;
 
@@ -63,6 +66,14 @@ class DormitorySearchFilters {
       if (!matchesSlots) return false;
     }
 
+    if (roomType case final selectedRoomType?) {
+      final selectedValue = _normalize(selectedRoomType.label);
+      final hasRoomType = dormitory.roomTypes.any(
+        (type) => _normalize(type) == selectedValue,
+      );
+      if (!hasRoomType) return false;
+    }
+
     if (amenities.isNotEmpty) {
       final available = dormitory.amenities.map(_normalize).toSet();
       if (!amenities.map(_normalize).every(available.contains)) return false;
@@ -89,6 +100,7 @@ class DormitorySearchFilters {
         query: query ?? this.query,
         priceRange: priceRange,
         slotRange: slotRange,
+        roomType: roomType,
         amenities: amenities,
         campus: campus,
         sortByRating: sortByRating ?? this.sortByRating,

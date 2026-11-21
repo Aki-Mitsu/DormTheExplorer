@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../domain/dormitory.dart';
 import '../domain/dormitory_search_filters.dart';
 import '../domain/route_destination.dart';
 
@@ -10,6 +11,7 @@ class SearchFiltersViewModel extends ChangeNotifier {
   }) : _query = initialFilters?.query ?? initialQuery,
       _priceRange = initialFilters?.priceRange,
       _slotRange = initialFilters?.slotRange,
+      _roomType = initialFilters?.roomType,
       _amenities = Set.of(initialFilters?.amenities ?? const <String>{}),
       _campus = initialFilters?.campus,
       _sortByRating = initialFilters?.sortByRating ?? true;
@@ -17,6 +19,7 @@ class SearchFiltersViewModel extends ChangeNotifier {
   String _query;
   DormPriceRange? _priceRange;
   DormSlotRange? _slotRange;
+  DormRoomType? _roomType;
   final Set<String> _amenities;
   RouteDestination? _campus;
   bool _sortByRating;
@@ -24,6 +27,7 @@ class SearchFiltersViewModel extends ChangeNotifier {
   String get query => _query;
   DormPriceRange? get priceRange => _priceRange;
   DormSlotRange? get slotRange => _slotRange;
+  DormRoomType? get roomType => _roomType;
   Set<String> get amenities => Set.unmodifiable(_amenities);
   RouteDestination? get campus => _campus;
   bool get sortByRating => _sortByRating;
@@ -32,6 +36,7 @@ class SearchFiltersViewModel extends ChangeNotifier {
     query: _query,
     priceRange: _priceRange,
     slotRange: _slotRange,
+    roomType: _roomType,
     amenities: _amenities,
     campus: _campus,
     sortByRating: _sortByRating,
@@ -57,6 +62,12 @@ class SearchFiltersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void selectRoomType(DormRoomType? value) {
+    if (_roomType != value) _sortByRating = true;
+    _roomType = value;
+    notifyListeners();
+  }
+
   void toggleAmenity(String value) {
     _sortByRating = true;
     if (!_amenities.add(value)) _amenities.remove(value);
@@ -78,6 +89,7 @@ class SearchFiltersViewModel extends ChangeNotifier {
     _query = '';
     _priceRange = null;
     _slotRange = null;
+    _roomType = null;
     _amenities.clear();
     _campus = null;
     _sortByRating = false;

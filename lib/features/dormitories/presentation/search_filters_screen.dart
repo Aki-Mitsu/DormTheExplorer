@@ -3,6 +3,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:material_ui/material_ui.dart';
 
 import '../../../theme/app_theme.dart';
+import '../domain/dormitory.dart';
 import '../domain/dormitory_search_filters.dart';
 import '../domain/route_destination.dart';
 import 'search_filters_view_model.dart';
@@ -89,6 +90,7 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
                             _searchField(),
                             _priceFilter(),
                             _slotFilter(),
+                            _roomTypeFilter(),
                             _amenitiesFilter(),
                             _campusFilter(),
                           ],
@@ -366,6 +368,48 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
             );
           }).toList(growable: false),
         );
+      },
+    ),
+  );
+
+  Widget _roomTypeFilter() => _FilterGroup(
+    title: 'Room Type',
+    trailing: Text(
+      'Optional',
+      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        color: AppTheme.onSurfaceVariant,
+        fontSize: 10,
+        height: 14 / 10,
+        letterSpacing: 0.4,
+      ),
+    ),
+    child: DropdownButtonFormField<String>(
+      key: ValueKey('room-type-${_viewModel.roomType?.name ?? 'any'}'),
+      initialValue: _viewModel.roomType?.name ?? '',
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: 'Room type',
+        prefixIcon: Icon(Icons.bed_outlined),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      ),
+      items: [
+        const DropdownMenuItem(value: '', child: Text('Any Room Type')),
+        ...DormRoomType.values.map(
+          (roomType) => DropdownMenuItem(
+            value: roomType.name,
+            child: Text(roomType.label),
+          ),
+        ),
+      ],
+      onChanged: (value) {
+        if (value == null || value.isEmpty) {
+          _viewModel.selectRoomType(null);
+          return;
+        }
+        final roomType = DormRoomType.values.firstWhere(
+          (type) => type.name == value,
+        );
+        _viewModel.selectRoomType(roomType);
       },
     ),
   );

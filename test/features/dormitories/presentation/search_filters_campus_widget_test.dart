@@ -9,7 +9,7 @@ void main() {
     tester,
   ) async {
     await _openFilters(tester);
-    final dropdown = find.byType(DropdownButtonFormField<String>);
+    final dropdown = find.byType(DropdownButtonFormField<String>).last;
     await tester.ensureVisible(dropdown);
 
     await tester.tap(dropdown);
@@ -62,7 +62,7 @@ Future<void> _openFilters(
 }
 
 Future<void> _chooseCampus(WidgetTester tester, String campusName) async {
-  final dropdown = find.byType(DropdownButtonFormField<String>);
+  final dropdown = find.byType(DropdownButtonFormField<String>).last;
   await tester.ensureVisible(dropdown);
   await tester.tap(dropdown);
   await tester.pumpAndSettle();
