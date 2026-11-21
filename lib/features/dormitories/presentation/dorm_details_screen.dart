@@ -1428,13 +1428,27 @@ class _ReviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            review.stayLabel,
+            _formatPostedAt(context),
             style: Theme.of(context).textTheme.labelSmall
                 ?.copyWith(color: AppTheme.onSurfaceVariant),
           ),
         ],
       ),
     );
+  }
+
+  String _formatPostedAt(BuildContext context) {
+    if (review.createdAt.millisecondsSinceEpoch == 0) {
+      return 'Posted date unavailable';
+    }
+
+    final postedAt = review.createdAt.toLocal();
+    final localizations = MaterialLocalizations.of(context);
+    final date = localizations.formatMediumDate(postedAt);
+    final time = localizations.formatTimeOfDay(
+      TimeOfDay.fromDateTime(postedAt),
+    );
+    return 'Posted $date at $time';
   }
 
   Widget _avatarInitials(String initials) => Text(
