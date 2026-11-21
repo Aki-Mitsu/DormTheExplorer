@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../theme/app_theme.dart';
+import '../data/batangas_city_boundary.dart';
 import '../data/dormitory_repository.dart';
 import '../domain/dormitory.dart';
 import 'add_dormitory_screen.dart';
@@ -38,6 +39,10 @@ class _LandlordDormitoryDetailsScreenState
 
   final DormitoryRepository _repository = DormitoryRepository();
   final PageController _photoController = PageController();
+  final MapController _locationMapController = MapController();
+  bool _isReturningLocationMap = false;
+  LatLng _lastValidLocationMapCenter = const LatLng(13.7565, 121.0583);
+  double _lastValidLocationMapZoom = 15;
   late Dormitory _dormitory;
   late StreamSubscription<Dormitory?> _dormitorySubscription;
   int _selectedPhoto = 0;
@@ -772,9 +777,43 @@ class _LandlordDormitoryDetailsScreenState
               child: SizedBox(
                 height: 180,
                 child: FlutterMap(
+                  mapController: _locationMapController,
                   options: MapOptions(
                     initialCenter: LatLng(latitude, longitude),
                     initialZoom: 15,
+                    cameraConstraint: CameraConstraint.contain(
+                      bounds: BatangasCityBoundary.mapBounds,
+                    ),
+                    onPositionChanged: (camera, hasGesture) {
+                      if (_isReturningLocationMap) return;
+                      if (BatangasCityBoundary.contains(camera.center)) {
+                        _lastValidLocationMapCenter = camera.center;
+                        _lastValidLocationMapZoom = camera.zoom;
+                        return;
+                      }
+                      if (!hasGesture) return;
+                      _isReturningLocationMap = true;
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        _locationMapController.move(
+                          _lastValidLocationMapCenter,
+                          _lastValidLocationMapZoom,
+                        );
+                        _isReturningLocationMap = false;
+                      });
+                    },
+                    onMapReady: () {
+                      final camera = _locationMapController.camera;
+                      if (BatangasCityBoundary.contains(camera.center)) {
+                        _lastValidLocationMapCenter = camera.center;
+                        _lastValidLocationMapZoom = camera.zoom;
+                      } else {
+                        _locationMapController.move(
+                          LatLng(latitude, longitude),
+                          camera.zoom,
+                        );
+                      }
+                    },
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.all,
                     ),
@@ -786,6 +825,24 @@ class _LandlordDormitoryDetailsScreenState
                       userAgentPackageName:
                           'dormtheexplorer.app.dorm_the_explorer',
                       maxNativeZoom: 19,
+                    ),
+                    PolygonLayer(
+                      polygons: [
+                        Polygon(
+                          points: BatangasCityBoundary.mapBoundsRing,
+                          holePointsList: BatangasCityBoundary.polygons,
+                          color: AppTheme.onSurface.withValues(alpha: 0.28),
+                          borderStrokeWidth: 0,
+                          disableHolesBorder: true,
+                        ),
+                        for (final boundary in BatangasCityBoundary.polygons)
+                          Polygon(
+                            points: boundary,
+                            color: const Color(0x00000000),
+                            borderColor: AppTheme.primaryContainer,
+                            borderStrokeWidth: 2,
+                          ),
+                      ],
                     ),
                     MarkerLayer(
                       markers: [
