@@ -34,7 +34,7 @@ class _AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+      stream: FirebaseAuth.instance.userChanges(),
       builder: (context, authSnapshot) {
         if (authSnapshot.hasError) {
           return _AuthGateMessage(
@@ -48,6 +48,9 @@ class _AuthGate extends StatelessWidget {
 
         final user = authSnapshot.data;
         if (user == null) return const LoginScreen();
+        if (user.email != null && !user.emailVerified) {
+          return _EmailVerificationGate(user: user);
+        }
 
         return FutureBuilder<String?>(
           key: ValueKey(user.uid),
@@ -75,6 +78,151 @@ class _AuthGate extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _EmailVerificationGate extends StatefulWidget {
+  const _EmailVerificationGate({required this.user});
+
+  final User user;
+
+  @override
+  State<_EmailVerificationGate> createState() => _EmailVerificationGateState();
+}
+
+class _EmailVerificationGateState extends State<_EmailVerificationGate> {
+  bool _isBusy = false;
+  bool _isVerified = false;
+  String? _message;
+
+  Future<void> _checkVerification() async {
+    if (_isBusy) return;
+    setState(() {
+      _isBusy = true;
+      _message = null;
+    });
+    try {
+      await widget.user.reload();
+      await FirebaseAuth.instance.currentUser?.getIdToken(true);
+      final verified =
+          FirebaseAuth.instance.currentUser?.emailVerified ?? false;
+      if (mounted) {
+        setState(() {
+          _isVerified = verified;
+          _message = verified
+              ? 'Email verified. You can continue.'
+              : 'Email is not verified yet. Open the link in your inbox.';
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _message = AuthService.messageFor(error));
+      }
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
+  Future<void> _resendVerification() async {
+    if (_isBusy) return;
+    setState(() {
+      _isBusy = true;
+      _message = null;
+    });
+    try {
+      await widget.user.sendEmailVerification();
+      if (mounted) {
+        setState(() => _message = 'A new verification link was sent.');
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _message = AuthService.messageFor(error));
+      }
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _isVerified ? Colors.green.shade700 : AppTheme.primaryContainer;
+    return Scaffold(
+      backgroundColor: AppTheme.surface,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Icon(
+                    _isVerified
+                        ? Icons.verified_rounded
+                        : Icons.mark_email_unread_outlined,
+                    size: 56,
+                    color: color,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _isVerified ? 'Email verified' : 'Verify your email',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _isVerified
+                        ? 'Your email is confirmed. Your account will open shortly.'
+                        : 'Open the verification link sent to '
+                            '${widget.user.email ?? 'your email address'}.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  if (_message != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      _message!,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: color),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  if (!_isVerified) ...[
+                    FilledButton(
+                      onPressed: _isBusy ? null : _checkVerification,
+                      child: _isBusy
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text("I've verified my email"),
+                    ),
+                    TextButton(
+                      onPressed: _isBusy ? null : _resendVerification,
+                      child: const Text('Resend verification link'),
+                    ),
+                  ],
+                  TextButton(
+                    onPressed: _isBusy
+                        ? null
+                        : () => FirebaseAuth.instance.signOut(),
+                    child: const Text('Sign out'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
