@@ -99,6 +99,25 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     );
   }
 
+  Future<void> _openGoogleMapsDirections() async {
+    final destination =
+        '${_dormLocation.latitude},${_dormLocation.longitude}';
+    final directionsUri = Uri.https('www.google.com', '/maps/dir/', {
+      'api': '1',
+      'destination': destination,
+      'travelmode': 'driving',
+    });
+    final opened = await launchUrl(
+      directionsUri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open Google Maps.')),
+      );
+    }
+  }
+
 
   @override
   void dispose() {
@@ -754,7 +773,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                     ?.copyWith(color: AppTheme.primaryDeep),
               ),
             ),
-          if (_hasLocation || widget.canEditLocation)
+          if (_hasLocation || widget.canEditLocation) ...[
             DormLocationMap(
               dormLocation: _dormLocation,
               dormLabel: _dormName,
@@ -762,8 +781,27 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
               destination: _destination.location,
               onMapTap: widget.canEditLocation ? _selectMapPin : null,
               onDormMarkerTap: _showPinDetails,
-            )
-          else
+            ),
+            if (_hasLocation)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.icon(
+                    onPressed: _openGoogleMapsDirections,
+                    icon: const Icon(Icons.directions_rounded, size: 18),
+                    label: const Text('Get directions'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.primaryContainer,
+                      foregroundColor: AppTheme.onPrimary,
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      shape: const StadiumBorder(),
+                    ),
+                  ),
+                ),
+              ),
+          ] else
             _locationUnavailableCard(),
           if (widget.canEditLocation)
             Padding(
