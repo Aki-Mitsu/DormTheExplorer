@@ -1,6 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+class EmailNotVerifiedException implements Exception {
+  const EmailNotVerifiedException(this.email);
+
+  final String email;
+
+  @override
+  String toString() => 'Verify $email before signing in.';
+}
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -22,6 +31,7 @@ class AuthService {
     );
 
     try {
+      await credential.user!.sendEmailVerification();
       await _db.collection('users').doc(credential.user!.uid).set({
         'fullName': fullName.trim(),
         'email': email.trim(),
@@ -45,8 +55,34 @@ class AuthService {
       email: email.trim(),
       password: password,
     );
-    final userId = credential.user?.uid;
-    return userId == null ? null : getRole(userId);
+    final user = credential.user;
+    if (user == null) return null;
+
+    await user.reload();
+    final refreshedUser = _auth.currentUser;
+    if (refreshedUser != null &&
+        refreshedUser.email != null &&
+        !refreshedUser.emailVerified) {
+      throw EmailNotVerifiedException(refreshedUser.email!);
+    }
+
+    return getRole(user.uid);
+  }
+
+  Future<void> resendVerificationEmail() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw StateError('Sign in to request another verification email.');
+    }
+    await user.sendEmailVerification();
+  }
+
+  Future<bool> refreshEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    await user.reload();
+    await _auth.currentUser?.getIdToken(true);
+    return _auth.currentUser?.emailVerified ?? false;
   }
 
   Future<void> signOut() => _auth.signOut();
@@ -60,6 +96,9 @@ class AuthService {
   }
 
   static String messageFor(Object error) {
+    if (error is EmailNotVerifiedException) {
+      return 'Verify your email address before signing in.';
+    }
     if (error is FirebaseAuthException) {
       return switch (error.code) {
         'email-already-in-use' => 'An account already exists for this email.',
