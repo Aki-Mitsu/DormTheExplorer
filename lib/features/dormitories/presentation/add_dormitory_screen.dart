@@ -53,6 +53,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   final _repository = DormitoryRepository();
   final Set<String> _amenities = {};
   final List<String> _photoUrls = [];
+  DormRoomType? _roomType;
 
   LatLng _location = const LatLng(13.7565, 121.0583);
   bool _isUploadingPhotos = false;
@@ -71,6 +72,9 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
     _availableSlotsController.text = dormitory.availableSlots.toString();
     _descriptionController.text = dormitory.description;
     _amenities.addAll(dormitory.amenities);
+    _roomType = DormRoomType.values
+        .where((type) => dormitory.roomTypes.contains(type.label))
+        .firstOrNull;
     _photoUrls.addAll(dormitory.photoUrls);
     if (dormitory.latitude != null && dormitory.longitude != null) {
       _location = LatLng(dormitory.latitude!, dormitory.longitude!);
@@ -331,6 +335,9 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
         totalSlots: totalSlots,
         amenities: List.unmodifiable(_amenities),
         description: _descriptionController.text.trim(),
+        roomTypes: _roomType == null
+            ? const []
+            : List.unmodifiable([_roomType!.label]),
         photoUrls: List.unmodifiable(_photoUrls),
         status: widget.existingDormitory?.status ?? 'approved',
         proximityLabel: widget.existingDormitory?.proximityLabel,
@@ -365,7 +372,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
             longitude: dormitory.longitude,
             landlordName: dormitory.landlordName,
             landlordPhone: dormitory.landlordPhone,
-            roomTypes: existingDormitory.roomTypes,
+            roomTypes: dormitory.roomTypes,
             utilitiesIncluded: existingDormitory.utilitiesIncluded,
           ),
         );
@@ -513,6 +520,8 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
+                _roomTypesSection(),
+                const SizedBox(height: 14),
                 _amenitiesSection(),
                 const SizedBox(height: 14),
                 _descriptionSection(),
@@ -631,6 +640,107 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
       ],
     ),
   );
+
+  Widget _roomTypesSection() {
+    final roomTypes = DormRoomType.values;
+    final rowCount = (roomTypes.length + 1) ~/ 2;
+
+    return _section(
+      title: 'Room Types',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Select one room configuration.',
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: AppTheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 10),
+          ...List.generate(rowCount, (rowIndex) {
+            final firstIndex = rowIndex * 2;
+            final first = roomTypes[firstIndex];
+            final secondIndex = firstIndex + 1;
+            final hasSecond = secondIndex < roomTypes.length;
+
+            return Padding(
+              padding: EdgeInsets.only(top: rowIndex == 0 ? 0 : 8),
+              child: Row(
+                children: [
+                  if (!hasSecond) const Expanded(child: SizedBox()),
+                  if (hasSecond)
+                    Expanded(child: _roomTypeOption(first))
+                  else
+                    Expanded(
+                      flex: 2,
+                      child: _roomTypeOption(first),
+                    ),
+                  if (hasSecond) ...[
+                    const SizedBox(width: 8),
+                    Expanded(child: _roomTypeOption(roomTypes[secondIndex])),
+                  ],
+                  if (!hasSecond) const Expanded(child: SizedBox()),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _roomTypeOption(DormRoomType roomType) {
+    final selected = _roomType == roomType;
+
+    return Material(
+      color: selected
+          ? AppTheme.primaryContainer
+          : AppTheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: _isSaving
+            ? null
+            : () => setState(() {
+                _roomType = selected ? null : roomType;
+              }),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 46),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected
+                  ? AppTheme.primaryContainer
+                  : AppTheme.outline.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  roomType.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: selected ? AppTheme.onPrimary : AppTheme.onSurface,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                size: 18,
+                color: selected ? AppTheme.onPrimary : AppTheme.outline,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _amenitiesSection() {
     return _section(
