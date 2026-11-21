@@ -3,6 +3,7 @@ class DormReview {
     required this.id,
     required this.dormitoryId,
     required this.authorName,
+    this.authorUid,
     this.authorPhotoUrl,
     required this.authorSubtitle,
     required this.rating,
@@ -14,6 +15,7 @@ class DormReview {
   final String id;
   final String dormitoryId;
   final String authorName;
+  final String? authorUid;
   final String? authorPhotoUrl;
   final String authorSubtitle;
   final int rating;
@@ -31,6 +33,7 @@ class DormReview {
       id: id,
       dormitoryId: json['dormitoryId'] as String? ?? '',
       authorName: json['authorName'] as String? ?? 'Dorm Seeker',
+      authorUid: json['authorUid'] as String?,
       authorPhotoUrl: json['authorPhotoUrl'] as String?,
       authorSubtitle: json['authorSubtitle'] as String? ?? 'Student seeker',
       rating: (json['rating'] as num?)?.toInt() ?? 0,
@@ -43,6 +46,7 @@ class DormReview {
   Map<String, dynamic> toJson() => {
     'dormitoryId': dormitoryId,
     'authorName': authorName,
+    if (authorUid != null) 'authorUid': authorUid,
     if (authorPhotoUrl != null) 'authorPhotoUrl': authorPhotoUrl,
     'authorSubtitle': authorSubtitle,
     'rating': rating,

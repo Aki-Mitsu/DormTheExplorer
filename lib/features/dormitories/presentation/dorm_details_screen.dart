@@ -879,7 +879,18 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (widget.canReview) _reviewComposer(),
+          if (widget.canReview && !_hasReviewed(reviews))
+            _reviewComposer()
+          else if (widget.canReview)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                'You have already reviewed this dormitory.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppTheme.onSurfaceVariant,
+                ),
+              ),
+            ),
           for (final review in reviews) _ReviewCard(review: review),
         ],
       ),
@@ -889,6 +900,23 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
             ?.copyWith(color: AppTheme.onSurfaceVariant),
       ),
     );
+  }
+
+  bool _hasReviewed(
+    List<DormReview> reviews, {
+    String? userId,
+    String? authorName,
+    String? authorPhotoUrl,
+  }) {
+    userId ??= FirebaseAuth.instance.currentUser?.uid;
+    final normalizedName = authorName?.trim().toLowerCase();
+    return reviews.any((review) {
+      if (userId != null && review.authorUid == userId) return true;
+      return review.authorUid == null &&
+          normalizedName?.isNotEmpty == true &&
+          review.authorName.trim().toLowerCase() == normalizedName &&
+          review.authorPhotoUrl == authorPhotoUrl;
+    });
   }
 
   Widget _reviewComposer() => Container(
@@ -972,6 +1000,10 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
       _showMessage('Sign in to post a review.');
       return;
     }
+    if (_hasReviewed(_viewModel.reviews)) {
+      _showMessage('You have already reviewed this dormitory.');
+      return;
+    }
 
     setState(() => _submittingReview = true);
     try {
@@ -993,8 +1025,20 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         }
         return;
       }
+      if (_hasReviewed(
+        _viewModel.reviews,
+        userId: user.uid,
+        authorName: authorName,
+        authorPhotoUrl: user.photoURL,
+      )) {
+        if (mounted) {
+          _showMessage('You have already reviewed this dormitory.');
+        }
+        return;
+      }
 
       await _viewModel.submitReview(
+        authorUid: user.uid,
         authorName: authorName,
         authorPhotoUrl: user.photoURL,
         rating: _selectedRating,

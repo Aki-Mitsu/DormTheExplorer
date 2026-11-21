@@ -141,6 +141,8 @@ service cloud.firestore {
                 .data.landlordId == request.auth.uid);
 
         allow create: if signedIn()
+          && reviewId == request.auth.uid
+          && request.resource.data.authorUid == request.auth.uid
           && get(/databases/$(database)/documents/dormitories/$(dormitoryId))
             .data.status == 'approved'
           && request.resource.data.rating is int

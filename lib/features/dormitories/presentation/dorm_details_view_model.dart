@@ -81,15 +81,17 @@ class DormDetailsViewModel extends ChangeNotifier {
   }
 
   Future<void> submitReview({
+    required String authorUid,
     required String authorName,
     String? authorPhotoUrl,
     required int rating,
     required String comment,
   }) async {
     final review = DormReview(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: authorUid,
       dormitoryId: dormitoryId,
       authorName: authorName,
+      authorUid: authorUid,
       authorPhotoUrl: authorPhotoUrl,
       authorSubtitle: 'Student seeker',
       rating: rating,
