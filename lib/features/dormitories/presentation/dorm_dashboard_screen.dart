@@ -956,10 +956,23 @@ class _DashboardHeader extends StatelessWidget {
               color: AppTheme.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.apartment_rounded,
-              color: AppTheme.onPrimary,
-              size: 20,
+            clipBehavior: Clip.antiAlias,
+            child: Transform.translate(
+              offset: const Offset(0, 3.5),
+              child: Transform.scale(
+                scale: 1.2,
+                child: Image.asset(
+                  'assets/images/Dorm_the_Explorer_Logo.png',
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.apartment_rounded,
+                    color: AppTheme.onPrimary,
+                    size: 20,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 8),

@@ -347,10 +347,23 @@ class _ProfileHeader extends StatelessWidget {
               color: AppTheme.primaryContainer,
               borderRadius: BorderRadius.circular(999),
             ),
-            child: const Icon(
-              Icons.apartment_rounded,
-              size: 20,
-              color: AppTheme.onPrimary,
+            clipBehavior: Clip.antiAlias,
+            child: Transform.translate(
+              offset: const Offset(0, 4),
+              child: Transform.scale(
+                scale: 1.2,
+                child: Image.asset(
+                  'assets/images/Dorm_the_Explorer_Logo.png',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.apartment_rounded,
+                    size: 20,
+                    color: AppTheme.onPrimary,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 8),
