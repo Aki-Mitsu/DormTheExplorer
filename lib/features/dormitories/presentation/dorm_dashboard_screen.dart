@@ -411,18 +411,29 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
             children: [
               Text(
                 '${dormitories.length} Dormitories Posted',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: AppTheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               if (dormitories.isNotEmpty)
-                Text(
-                  'Batangas City',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.primaryContainer,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.location_on_rounded,
+                      size: 16,
+                      color: AppTheme.primaryContainer,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Batangas City',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: AppTheme.primaryContainer,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
