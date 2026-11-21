@@ -179,21 +179,103 @@ class ProfileDashboardScreen extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
-                                vertical: 4,
+                                vertical: 8,
                               ),
-                              child: OutlinedButton.icon(
-                                onPressed: email.trim().isEmpty || email == '—'
-                                    ? null
-                                    : () => _sendPasswordReset(context, email),
-                                icon: const Icon(Icons.lock_reset_rounded),
-                                label: const Text('Reset Password'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppTheme.primaryContainer,
-                                  side: const BorderSide(
-                                    color: AppTheme.primaryContainer,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 4,
+                                      bottom: 8,
+                                    ),
+                                    child: Text(
+                                      'SECURITY',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelMedium
+                                          ?.copyWith(
+                                            color: AppTheme.onSurfaceVariant,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 1,
+                                          ),
+                                    ),
                                   ),
-                                  minimumSize: const Size.fromHeight(48),
-                                ),
+                                  Material(
+                                    color: AppTheme.surfaceContainerLowest,
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: InkWell(
+                                      onTap:
+                                          email.trim().isEmpty ||
+                                              email == '—'
+                                          ? null
+                                          : () => _sendPasswordReset(
+                                              context,
+                                              email,
+                                            ),
+                                      borderRadius: BorderRadius.circular(14),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(14),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 42,
+                                              height: 42,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    AppTheme.surfaceContainerLow,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: const Icon(
+                                                Icons.lock_outline_rounded,
+                                                size: 21,
+                                                color: AppTheme.primaryContainer,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    'Reset Password',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleSmall
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(height: 3),
+                                                  Text(
+                                                    'Change your account password',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.copyWith(
+                                                          color: AppTheme
+                                                              .onSurfaceVariant,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            const Icon(
+                                              Icons.chevron_right_rounded,
+                                              color: AppTheme.outline,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             Padding(
