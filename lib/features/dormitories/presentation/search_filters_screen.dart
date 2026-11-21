@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../theme/app_theme.dart';
 import '../domain/dormitory_search_filters.dart';
+import '../domain/route_destination.dart';
 import 'search_filters_view_model.dart';
 
 class SearchFiltersScreen extends StatefulWidget {
@@ -380,26 +381,34 @@ class _SearchFiltersScreenState extends State<SearchFiltersScreen> {
         letterSpacing: 0.4,
       ),
     ),
-    child: Column(
-      children: [
-        _CampusButton(
-          label: 'Near Alangilan Campus',
-          selected: _viewModel.campus == DormCampus.alangilan,
-          onTap: () => _viewModel.selectCampus(DormCampus.alangilan),
-        ),
-        const SizedBox(height: 8),
-        _CampusButton(
-          label: 'Near Pablo Borbon Campus',
-          selected: _viewModel.campus == DormCampus.pabloBorbon,
-          onTap: () => _viewModel.selectCampus(DormCampus.pabloBorbon),
-        ),
-        const SizedBox(height: 8),
-        _CampusButton(
-          label: 'Near LPU',
-          selected: _viewModel.campus == DormCampus.lpu,
-          onTap: () => _viewModel.selectCampus(DormCampus.lpu),
+    child: DropdownButtonFormField<String>(
+      key: ValueKey(_viewModel.campus?.name ?? 'any-campus'),
+      initialValue: _viewModel.campus?.name ?? '',
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: 'Campus',
+        prefixIcon: Icon(Icons.school_outlined),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      ),
+      items: [
+        const DropdownMenuItem(value: '', child: Text('Any Campus')),
+        ...RouteDestination.campuses.map(
+          (campus) => DropdownMenuItem(
+            value: campus.name,
+            child: Text(campus.name, overflow: TextOverflow.ellipsis),
+          ),
         ),
       ],
+      onChanged: (value) {
+        if (value == null || value.isEmpty) {
+          _viewModel.selectCampus(null);
+          return;
+        }
+        final campus = RouteDestination.campuses.firstWhere(
+          (destination) => destination.name == value,
+        );
+        _viewModel.selectCampus(campus);
+      },
     ),
   );
 
@@ -600,61 +609,6 @@ class _AmenityButton extends StatelessWidget {
                     )
                   : null,
             ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-class _CampusButton extends StatelessWidget {
-  const _CampusButton({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: selected ? AppTheme.primaryDeep : AppTheme.surfaceContainer,
-    borderRadius: BorderRadius.circular(12),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 48),
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Icon(
-              Icons.school_rounded,
-              size: 20,
-              color: selected ? AppTheme.onPrimary : AppTheme.outline,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: selected ? AppTheme.onPrimary : AppTheme.onSurface,
-                  fontSize: 12,
-                  height: 16 / 12,
-                  letterSpacing: 0.24,
-                ),
-              ),
-            ),
-            if (selected) ...[
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.check_circle_rounded,
-                size: 18,
-                color: AppTheme.onPrimary,
-              ),
-            ],
           ],
         ),
       ),

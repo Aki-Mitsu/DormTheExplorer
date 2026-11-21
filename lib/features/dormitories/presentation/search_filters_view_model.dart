@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../domain/dormitory_search_filters.dart';
+import '../domain/route_destination.dart';
 
 class SearchFiltersViewModel extends ChangeNotifier {
   SearchFiltersViewModel({
@@ -17,14 +18,14 @@ class SearchFiltersViewModel extends ChangeNotifier {
   DormPriceRange? _priceRange;
   DormSlotRange? _slotRange;
   final Set<String> _amenities;
-  DormCampus? _campus;
+  RouteDestination? _campus;
   bool _sortByRating;
 
   String get query => _query;
   DormPriceRange? get priceRange => _priceRange;
   DormSlotRange? get slotRange => _slotRange;
   Set<String> get amenities => Set.unmodifiable(_amenities);
-  DormCampus? get campus => _campus;
+  RouteDestination? get campus => _campus;
   bool get sortByRating => _sortByRating;
 
   DormitorySearchFilters get filters => DormitorySearchFilters(
@@ -62,10 +63,9 @@ class SearchFiltersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void selectCampus(DormCampus value) {
-    final nextValue = _campus == value ? null : value;
-    if (_campus != nextValue) _sortByRating = true;
-    _campus = nextValue;
+  void selectCampus(RouteDestination? value) {
+    if (_campus != value) _sortByRating = true;
+    _campus = value;
     notifyListeners();
   }
 

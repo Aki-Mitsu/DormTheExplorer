@@ -7,8 +7,6 @@ enum DormPriceRange { budget, midRange, premium }
 
 enum DormSlotRange { oneToTwo, threeToFour, fiveOrMore }
 
-enum DormCampus { alangilan, pabloBorbon, lpu }
-
 class DormitorySearchFilters {
   DormitorySearchFilters({
     this.query = '',
@@ -23,7 +21,7 @@ class DormitorySearchFilters {
   final DormPriceRange? priceRange;
   final DormSlotRange? slotRange;
   final Set<String> amenities;
-  final DormCampus? campus;
+  final RouteDestination? campus;
   final bool sortByRating;
 
   static const double campusRadiusKm = 3;
@@ -71,22 +69,16 @@ class DormitorySearchFilters {
     }
 
     if (campus case final selectedCampus?) {
-      final index = DormCampus.values.indexOf(selectedCampus);
-      final destination = RouteDestination.campuses[index];
       final latitude = dormitory.latitude;
       final longitude = dormitory.longitude;
-      if (latitude != null && longitude != null) {
-        final distance = _distance.as(
-          LengthUnit.Kilometer,
-          destination.location,
-          LatLng(latitude, longitude),
-        );
-        if (distance > campusRadiusKm) return false;
-      } else if (!(dormitory.proximityLabel ?? '')
-          .toLowerCase()
-          .contains(_campusSearchToken(selectedCampus))) {
-        return false;
-      }
+      if (latitude == null || longitude == null) return false;
+
+      final distance = _distance.as(
+        LengthUnit.Kilometer,
+        selectedCampus.location,
+        LatLng(latitude, longitude),
+      );
+      if (distance > campusRadiusKm) return false;
     }
 
     return true;
@@ -105,9 +97,4 @@ class DormitorySearchFilters {
   static String _normalize(String value) =>
       value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
 
-  static String _campusSearchToken(DormCampus campus) => switch (campus) {
-    DormCampus.alangilan => 'alangilan',
-    DormCampus.pabloBorbon => 'pablo borbon',
-    DormCampus.lpu => 'lpu',
-  };
 }

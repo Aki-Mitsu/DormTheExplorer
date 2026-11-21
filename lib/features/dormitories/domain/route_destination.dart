@@ -27,5 +27,30 @@ class RouteDestination {
       address: 'Capitol Site, Batangas City',
       location: LatLng(13.76342, 121.06537),
     ),
+    RouteDestination(
+      name: 'University of Batangas',
+      address: 'Hilltop Road, Kumintang Ibaba, Batangas City',
+      location: LatLng(13.7639389, 121.0597917),
+    ),
+    RouteDestination(
+      name: 'Golden Gate Colleges',
+      address: 'Batangas City',
+      location: LatLng(13.7570253, 121.0606075),
+    ),
+    RouteDestination(
+      name: 'St. Bridget College',
+      address: 'Batangas City',
+      location: LatLng(13.7529481, 121.0584424),
+    ),
+    RouteDestination(
+      name: 'STI College - Batangas',
+      address: 'Batangas City',
+      location: LatLng(13.7709325, 121.0646665),
+    ),
+    RouteDestination(
+      name: 'Westmead International School',
+      address: 'Batangas City',
+      location: LatLng(13.7853954, 121.0758034),
+    ),
   ];
 }
