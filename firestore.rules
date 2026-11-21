@@ -67,7 +67,12 @@ service cloud.firestore {
         && request.resource.data.availableSlots >= 0
         && request.resource.data.availableSlots
           <= request.resource.data.totalSlots
-        && request.resource.data.status == 'approved';
+        && request.resource.data.status == 'approved'
+        && (!('landlordPhotoUrl' in request.resource.data)
+          || request.resource.data.landlordPhotoUrl == null
+          || (request.resource.data.landlordPhotoUrl is string
+            && request.resource.data.landlordPhotoUrl.size() <= 2048
+            && request.resource.data.landlordPhotoUrl.matches('^https://.*')));
 
       allow update: if (
         isLandlord()
@@ -79,6 +84,11 @@ service cloud.firestore {
         && request.resource.data.availableSlots >= 0
         && request.resource.data.availableSlots
           <= request.resource.data.totalSlots
+        && (!('landlordPhotoUrl' in request.resource.data)
+          || request.resource.data.landlordPhotoUrl == null
+          || (request.resource.data.landlordPhotoUrl is string
+            && request.resource.data.landlordPhotoUrl.size() <= 2048
+            && request.resource.data.landlordPhotoUrl.matches('^https://.*')))
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'name',
           'address',
@@ -93,6 +103,7 @@ service cloud.firestore {
           'longitude',
           'landlordName',
           'landlordPhone',
+          'landlordPhotoUrl',
           'roomTypes',
           'utilitiesIncluded',
           'updatedAt'

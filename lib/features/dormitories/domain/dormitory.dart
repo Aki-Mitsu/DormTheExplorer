@@ -46,6 +46,7 @@ class Dormitory {
     this.longitude,
     this.landlordName,
     this.landlordPhone,
+    this.landlordPhotoUrl,
     this.roomTypes = const [],
     this.utilitiesIncluded = false,
   });
@@ -67,6 +68,7 @@ class Dormitory {
   final double? longitude;
   final String? landlordName;
   final String? landlordPhone;
+  final String? landlordPhotoUrl;
   final List<String> roomTypes;
   final bool utilitiesIncluded;
 
@@ -105,6 +107,7 @@ class Dormitory {
       longitude: (json['longitude'] as num?)?.toDouble(),
       landlordName: json['landlordName'] as String?,
       landlordPhone: json['landlordPhone'] as String?,
+      landlordPhotoUrl: json['landlordPhotoUrl'] as String?,
       roomTypes: json['roomTypes'] is List
           ? List.unmodifiable((json['roomTypes'] as List).whereType<String>())
           : const [],
@@ -129,6 +132,7 @@ class Dormitory {
     if (longitude != null) 'longitude': longitude,
     if (landlordName != null) 'landlordName': landlordName,
     if (landlordPhone != null) 'landlordPhone': landlordPhone,
+    if (landlordPhotoUrl != null) 'landlordPhotoUrl': landlordPhotoUrl,
     'roomTypes': roomTypes,
     'utilitiesIncluded': utilitiesIncluded,
   };

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -77,7 +78,6 @@ class ProfileDashboardScreen extends StatelessWidget {
                               child: _ProfileIdentityCard(
                                 name: name,
                                 roleLabel: roleLabel,
-                                location: 'Batangas City',
                                 photoUrl: user?.photoURL,
                                 userId: userId,
                               ),
@@ -418,26 +418,26 @@ class _ProfileHeader extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
               color: AppTheme.primaryContainer,
-              borderRadius: BorderRadius.circular(999),
+              shape: BoxShape.circle,
             ),
             clipBehavior: Clip.antiAlias,
             child: Transform.translate(
-              offset: const Offset(0, 4),
+              offset: const Offset(0, 3.5),
               child: Transform.scale(
                 scale: 1.2,
                 child: Image.asset(
                   'assets/images/Dorm_the_Explorer_Logo.png',
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => const Icon(
                     Icons.apartment_rounded,
-                    size: 20,
                     color: AppTheme.onPrimary,
+                    size: 20,
                   ),
                 ),
               ),
@@ -456,7 +456,13 @@ class _ProfileHeader extends StatelessWidget {
                   letterSpacing: 0.5,
                 ),
               ),
-              Text('Profile', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'PROFILE',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppTheme.onSurfaceVariant,
+                  letterSpacing: 1,
+                ),
+              ),
             ],
           ),
           const Spacer(),
@@ -491,6 +497,18 @@ class _ProfilePictureState extends State<_ProfilePicture> {
   void initState() {
     super.initState();
     _photoUrl = widget.photoUrl;
+    final photoUrl = widget.photoUrl?.trim();
+    if (photoUrl?.isNotEmpty == true) {
+      unawaited(
+        _syncLandlordPhoto(photoUrl!).then((error) {
+          if (error != null && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Could not sync photo to listings: $error')),
+            );
+          }
+        }),
+      );
+    }
   }
 
   @override
@@ -504,6 +522,38 @@ class _ProfilePictureState extends State<_ProfilePicture> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.photoUrl != widget.photoUrl) {
       _photoUrl = widget.photoUrl;
+    }
+  }
+
+  Future<String?> _syncLandlordPhoto(String photoUrl) async {
+    if (FirebaseAuth.instance.currentUser?.uid != widget.userId) {
+      return 'No matching signed-in account.';
+    }
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('dormitories')
+          .where('landlordId', isEqualTo: widget.userId)
+          .get();
+      final documents = snapshot.docs
+          .where((document) => document.data()['landlordPhotoUrl'] != photoUrl)
+          .toList(growable: false);
+
+      for (var start = 0; start < documents.length; start += 450) {
+        final batch = FirebaseFirestore.instance.batch();
+        for (final document in documents.skip(start).take(450)) {
+          batch.update(document.reference, {
+            'landlordPhotoUrl': photoUrl,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+        await batch.commit();
+      }
+      return null;
+    } catch (error) {
+      return error is FirebaseException
+          ? error.message ?? error.code
+          : error.toString();
     }
   }
 
@@ -525,12 +575,19 @@ class _ProfilePictureState extends State<_ProfilePicture> {
       final result = await _uploadService.uploadImage(File(image.path));
       final downloadUrl = result.secureUrl;
       await currentUser.updatePhotoURL(downloadUrl);
+      final syncError = await _syncLandlordPhoto(downloadUrl);
 
       if (!mounted) return;
       setState(() => _photoUrl = downloadUrl);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Profile photo updated.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            syncError == null
+                ? 'Profile photo updated.'
+                : 'Profile photo updated, but listing sync failed: $syncError',
+          ),
+        ),
+      );
     } catch (error) {
       if (!mounted) return;
       final message = switch (error) {
@@ -637,14 +694,12 @@ class _ProfileIdentityCard extends StatelessWidget {
   const _ProfileIdentityCard({
     required this.name,
     required this.roleLabel,
-    required this.location,
     required this.photoUrl,
     required this.userId,
   });
 
   final String name;
   final String roleLabel;
-  final String location;
   final String? photoUrl;
   final String userId;
 
@@ -697,26 +752,7 @@ class _ProfileIdentityCard extends StatelessWidget {
                   ?.copyWith(color: AppTheme.onSecondaryFixedVariant),
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.location_on_outlined,
-                size: 16,
-                color: AppTheme.primaryDeep,
-              ),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  location,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: AppTheme.onSurfaceVariant),
-                ),
-              ),
-            ],
-          ),
+
         ],
       ),
     );

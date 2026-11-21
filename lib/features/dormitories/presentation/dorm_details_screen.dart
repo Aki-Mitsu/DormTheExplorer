@@ -135,7 +135,12 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: AppBar(
-        title: const Text('Dorm Details'),
+        title: Text(
+          'Dorm Details',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         leading: IconButton(
           tooltip: 'Go back',
           onPressed: () => Navigator.of(context).maybePop(),
@@ -248,18 +253,6 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                             colors: [Color(0x77000000), Colors.transparent],
                           ),
                         ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: _Tag(
-                        icon: Icons.directions_walk_rounded,
-                        label: proximity?.isNotEmpty == true
-                            ? proximity!
-                            : _previewingLocation
-                            ? 'Sample location'
-                            : 'Dorm location',
                       ),
                     ),
                     Positioned(
@@ -402,63 +395,48 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
               color: AppTheme.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final rentDetails = Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      'MONTHLY RENT',
-                      style: Theme.of(context).textTheme.labelSmall
-                          ?.copyWith(color: AppTheme.onSurfaceVariant),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      dorm.monthlyPrice > 0
-                          ? '${_formatPrice(dorm.monthlyPrice)} / month'
-                          : 'Price not provided',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppTheme.primaryContainer,
-                        fontWeight: FontWeight.w800,
+                    Expanded(
+                      child: Text(
+                        'MONTHLY RENT',
+                        style: Theme.of(context).textTheme.labelSmall
+                            ?.copyWith(color: AppTheme.onSurfaceVariant),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      dorm.utilitiesIncluded
-                          ? '✓ Water & electricity included'
-                          : 'Utility details not provided',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: dorm.utilitiesIncluded
-                            ? AppTheme.secondary
-                            : AppTheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                );
-                final availability = _AvailabilityBadge(
-                  available: dorm.availableSlots,
-                  total: dorm.totalSlots,
-                );
-
-                if (constraints.maxWidth < 360) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      rentDetails,
-                      const SizedBox(height: 10),
-                      availability,
-                    ],
-                  );
-                }
-
-                return Row(
-                  children: [
-                    Expanded(child: rentDetails),
                     const SizedBox(width: 8),
-                    Flexible(child: availability),
+                    _AvailabilityBadge(
+                      available: dorm.availableSlots,
+                      total: dorm.totalSlots,
+                    ),
                   ],
-                );
-              },
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  dorm.monthlyPrice > 0
+                      ? '${_formatPrice(dorm.monthlyPrice)} / month'
+                      : 'Price not provided',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppTheme.primaryContainer,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  dorm.utilitiesIncluded
+                      ? '✓ Water & electricity included'
+                      : 'Utility details not provided',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: dorm.utilitiesIncluded
+                        ? AppTheme.secondary
+                        : AppTheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -688,6 +666,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   Widget _landlordContact() {
     final name = widget.dormitory.landlordName?.trim();
     final phone = widget.dormitory.landlordPhone?.trim();
+    final photoUrl = widget.dormitory.landlordPhotoUrl?.trim();
     return _section(
       'Landlord Contact',
       Container(
@@ -698,10 +677,24 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         ),
         child: Row(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 28,
               backgroundColor: AppTheme.surfaceContainer,
-              child: Icon(Icons.person_rounded, color: AppTheme.outline),
+              child: photoUrl == null || photoUrl.isEmpty
+                  ? const Icon(Icons.person_rounded, color: AppTheme.outline)
+                  : ClipOval(
+                      child: Image.network(
+                        photoUrl,
+                        width: 56,
+                        height: 56,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.person_rounded,
+                              color: AppTheme.outline,
+                            ),
+                      ),
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1357,8 +1350,8 @@ class _AvailabilityBadge extends StatelessWidget {
     final label = total <= 0
         ? 'Availability pending'
         : full
-        ? 'Full • $total slots'
-        : '$available available / $total slots';
+        ? 'Fully booked'
+        : '$available ${available == 1 ? 'slot' : 'slots'} available';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
