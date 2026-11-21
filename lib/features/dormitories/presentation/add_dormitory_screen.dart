@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../app_notice.dart';
 import '../../../theme/app_theme.dart';
 import '../data/batangas_city_boundary.dart';
 import '../data/cloudinary_upload_service.dart';
@@ -44,6 +45,13 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   ];
 
   final _formKey = GlobalKey<FormState>();
+  final _nameFieldKey = GlobalKey<FormFieldState<String>>();
+  final _addressFieldKey = GlobalKey<FormFieldState<String>>();
+  final _priceFieldKey = GlobalKey<FormFieldState<String>>();
+  final _totalSlotsFieldKey = GlobalKey<FormFieldState<String>>();
+  final _availableSlotsFieldKey = GlobalKey<FormFieldState<String>>();
+  final _descriptionFieldKey = GlobalKey<FormFieldState<String>>();
+  final _photosSectionKey = GlobalKey();
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _priceController = TextEditingController();
@@ -555,12 +563,16 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
 
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      await _scrollToFirstInvalidField();
+      return;
+    }
     if (_isUploadingPhotos) {
       _showMessage('Wait for photo uploads to finish before saving.');
       return;
     }
     if (_photoUrls.isEmpty) {
+      await _scrollTo(_photosSectionKey);
       _showMessage('Add at least one dormitory photo.');
       return;
     }
@@ -672,16 +684,40 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
     }
   }
 
+  Future<void> _scrollToFirstInvalidField() async {
+    final fieldKeys = [
+      _nameFieldKey,
+      _addressFieldKey,
+      _priceFieldKey,
+      _totalSlotsFieldKey,
+      _availableSlotsFieldKey,
+      _descriptionFieldKey,
+    ];
+
+    for (final key in fieldKeys) {
+      if (key.currentState?.hasError != true) continue;
+      await _scrollTo(key);
+      return;
+    }
+  }
+
+  Future<void> _scrollTo(GlobalKey key) async {
+    final targetContext = key.currentContext;
+    if (targetContext == null) return;
+    await Scrollable.ensureVisible(
+      targetContext,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+      alignment: 0.2,
+    );
+  }
+
   String? _requiredText(String? value, String label) {
     if (value == null || value.trim().isEmpty) return '$label is required.';
     return null;
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
+  void _showMessage(String message) => AppNotice.show(context, message);
 
   @override
   Widget build(BuildContext context) {
@@ -715,6 +751,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                   child: Column(
                     children: [
                       _textField(
+                        fieldKey: _nameFieldKey,
                         controller: _nameController,
                         label: 'Dormitory Name',
                         hint: 'e.g., University Heights Student Residence',
@@ -724,6 +761,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                       ),
                       const SizedBox(height: 14),
                       _textField(
+                        fieldKey: _addressFieldKey,
                         controller: _addressController,
                         label: 'Complete Address',
                         hint:
@@ -750,6 +788,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                       ),
                       const SizedBox(height: 14),
                       _textField(
+                        fieldKey: _priceFieldKey,
                         controller: _priceController,
                         label: 'Monthly Rental Price (PHP)',
                         hint: '3,500',
@@ -771,6 +810,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                         children: [
                           Expanded(
                             child: _textField(
+                              fieldKey: _totalSlotsFieldKey,
                               controller: _totalSlotsController,
                               label: 'Total Slots',
                               hint: '16',
@@ -788,6 +828,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _textField(
+                              fieldKey: _availableSlotsFieldKey,
                               controller: _availableSlotsController,
                               label: 'Available Slots',
                               hint: '4',
@@ -832,11 +873,13 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   }
 
   Widget _section({
+    Key? key,
     required String title,
     required Widget child,
     Widget? trailing,
   }) {
     return Container(
+      key: key,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainerLowest,
@@ -887,12 +930,14 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
     required String label,
     required String hint,
     required IconData icon,
+    Key? fieldKey,
     String? prefixText,
     String? helperText,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
+      key: fieldKey,
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
@@ -1120,6 +1165,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextFormField(
+            key: _descriptionFieldKey,
             controller: _descriptionController,
             maxLength: _maxDescriptionLength,
             minLines: 4,
@@ -1160,6 +1206,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
 
   Widget _photosSection() {
     return _section(
+      key: _photosSectionKey,
       title: 'Dormitory Photos',
       trailing: Text(
         '${_photoUrls.length} / $_maxPhotos uploaded',
