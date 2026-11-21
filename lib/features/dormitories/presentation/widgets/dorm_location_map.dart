@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../theme/app_theme.dart';
+import '../../data/batangas_city_boundary.dart';
 
 class DormLocationMap extends StatefulWidget {
   const DormLocationMap({
@@ -28,6 +29,11 @@ class DormLocationMap extends StatefulWidget {
 }
 
 class _DormLocationMapState extends State<DormLocationMap> {
+  final MapController _mapController = MapController();
+  bool _isReturningToCity = false;
+  LatLng _lastValidMapCenter = const LatLng(13.7565, 121.0583);
+  double _lastValidMapZoom = 15;
+
   late final NetworkTileProvider _tileProvider = NetworkTileProvider(
     headers: {
       'User-Agent':
@@ -48,8 +54,10 @@ class _DormLocationMapState extends State<DormLocationMap> {
       child: SizedBox(
         height: 220,
         child: Stack(
+          fit: StackFit.expand,
           children: [
             FlutterMap(
+              mapController: _mapController,
               options: MapOptions(
                 initialCameraFit: CameraFit.coordinates(
                   coordinates: [
@@ -60,6 +68,40 @@ class _DormLocationMapState extends State<DormLocationMap> {
                   padding: const EdgeInsets.all(40),
                   maxZoom: 16,
                 ),
+                cameraConstraint: CameraConstraint.contain(
+                  bounds: BatangasCityBoundary.mapBounds,
+                ),
+                onPositionChanged: (camera, hasGesture) {
+                  if (_isReturningToCity) return;
+                  if (BatangasCityBoundary.contains(camera.center)) {
+                    _lastValidMapCenter = camera.center;
+                    _lastValidMapZoom = camera.zoom;
+                    return;
+                  }
+                  if (!hasGesture) return;
+                  _isReturningToCity = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
+                    _mapController.move(
+                      _lastValidMapCenter,
+                      _lastValidMapZoom,
+                    );
+                    _isReturningToCity = false;
+                  });
+                },
+                onMapReady: () {
+                  final camera = _mapController.camera;
+                  if (BatangasCityBoundary.contains(camera.center)) {
+                    _lastValidMapCenter = camera.center;
+                    _lastValidMapZoom = camera.zoom;
+                  } else {
+                    final returnPoint =
+                        BatangasCityBoundary.contains(widget.dormLocation)
+                        ? widget.dormLocation
+                        : const LatLng(13.7565, 121.0583);
+                    _mapController.move(returnPoint, camera.zoom);
+                  }
+                },
                 onTap: widget.onMapTap == null
                     ? null
                     : (tapPosition, point) => widget.onMapTap!(point),
@@ -75,6 +117,24 @@ class _DormLocationMapState extends State<DormLocationMap> {
                   errorTileCallback: (tile, error, stackTrace) {
                     debugPrint('OpenStreetMap tile failed: $error');
                   },
+                ),
+                PolygonLayer(
+                  polygons: [
+                    Polygon(
+                      points: BatangasCityBoundary.mapBoundsRing,
+                      holePointsList: BatangasCityBoundary.polygons,
+                      color: AppTheme.onSurface.withValues(alpha: 0.28),
+                      borderStrokeWidth: 0,
+                      disableHolesBorder: true,
+                    ),
+                    for (final boundary in BatangasCityBoundary.polygons)
+                      Polygon(
+                        points: boundary,
+                        color: const Color(0x00000000),
+                        borderColor: AppTheme.primaryContainer,
+                        borderStrokeWidth: 2,
+                      ),
+                  ],
                 ),
                 if (widget.routePoints.length > 1)
                   PolylineLayer(
