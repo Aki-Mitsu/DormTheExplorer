@@ -6,14 +6,20 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isLandlord() {
+    function verifiedUser() {
       return signedIn()
+        && (request.auth.token.email_verified == true
+          || request.auth.token.firebase.sign_in_provider == 'phone');
+    }
+
+    function isLandlord() {
+      return verifiedUser()
         && get(/databases/$(database)/documents/users/$(request.auth.uid))
           .data.role == 'landlord';
     }
 
     function isSeeker() {
-      return signedIn()
+      return verifiedUser()
         && get(/databases/$(database)/documents/users/$(request.auth.uid))
           .data.role == 'seeker';
     }
@@ -24,7 +30,7 @@ service cloud.firestore {
     }
 
     function validAverageRatingUpdate() {
-      return signedIn()
+      return verifiedUser()
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['averageRating'])
         && request.resource.data.averageRating is number
@@ -39,7 +45,7 @@ service cloud.firestore {
 
       allow read: if signedIn() && request.auth.uid == userId;
 
-      allow update: if signedIn()
+      allow update: if verifiedUser()
         && request.auth.uid == userId
         && request.resource.data.role == resource.data.role;
 
@@ -47,7 +53,7 @@ service cloud.firestore {
     }
 
     match /dormitories/{dormitoryId} {
-      allow get, list: if signedIn()
+      allow get, list: if verifiedUser()
         && (resource.data.status == 'approved'
           || resource.data.landlordId == request.auth.uid);
 
@@ -134,13 +140,13 @@ service cloud.firestore {
       }
 
       match /reviews/{reviewId} {
-        allow read: if signedIn()
+        allow read: if verifiedUser()
           && (get(/databases/$(database)/documents/dormitories/$(dormitoryId))
                 .data.status == 'approved'
             || get(/databases/$(database)/documents/dormitories/$(dormitoryId))
                 .data.landlordId == request.auth.uid);
 
-        allow create: if signedIn()
+        allow create: if isSeeker()
           && reviewId == request.auth.uid
           && request.resource.data.authorUid == request.auth.uid
           && get(/databases/$(database)/documents/dormitories/$(dormitoryId))
