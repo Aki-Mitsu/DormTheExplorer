@@ -34,6 +34,7 @@ dependencies:
   firebase_auth: ^7.0.1
   cloud_firestore: ^7.1.0
   image_picker: ^1.2.4
+  geolocator: ^14.1.2
 
 dependency_overrides:
   # Avoid a JNI class lookup failure while flutter_map initializes its tile cache.

@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose a photo for your DormTheExplorer profile.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Use your current location to place the dormitory map pin and find its address.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
