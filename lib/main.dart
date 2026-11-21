@@ -39,7 +39,7 @@ class _AuthGate extends StatelessWidget {
         if (authSnapshot.hasError) {
           return _AuthGateMessage(
             message: AuthService.messageFor(authSnapshot.error!),
-            onSignOut: FirebaseAuth.instance.signOut,
+            onSignOut: AuthService().signOut,
           );
         }
         if (authSnapshot.connectionState == ConnectionState.waiting) {
@@ -56,7 +56,7 @@ class _AuthGate extends StatelessWidget {
             if (roleSnapshot.hasError) {
               return _AuthGateMessage(
                 message: AuthService.messageFor(roleSnapshot.error!),
-                onSignOut: FirebaseAuth.instance.signOut,
+                onSignOut: AuthService().signOut,
               );
             }
             if (roleSnapshot.connectionState == ConnectionState.waiting) {
@@ -67,7 +67,7 @@ class _AuthGate extends StatelessWidget {
             if (role != 'seeker' && role != 'landlord') {
               return _AuthGateMessage(
                 message: 'Your account does not have a valid Seeker or Landlord profile.',
-                onSignOut: FirebaseAuth.instance.signOut,
+                onSignOut: AuthService().signOut,
               );
             }
 
