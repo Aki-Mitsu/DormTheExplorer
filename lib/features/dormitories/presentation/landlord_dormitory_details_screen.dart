@@ -288,7 +288,7 @@ class _LandlordDormitoryDetailsScreenState
         Expanded(
           child: Text(
             'LANDLORD MANAGEMENT',
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: AppTheme.onSurfaceVariant,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.7,
@@ -305,7 +305,7 @@ class _LandlordDormitoryDetailsScreenState
           ),
           child: Text(
             label,
-            style: Theme.of(context).textTheme.labelSmall
+            style: Theme.of(context).textTheme.labelMedium
                 ?.copyWith(color: color, fontWeight: FontWeight.w700),
           ),
         ),
@@ -393,7 +393,7 @@ class _LandlordDormitoryDetailsScreenState
                                 ),
                                 child: Text(
                                   '${_selectedPhoto + 1} / ${photos.length} Photos',
-                                  style: Theme.of(context).textTheme.labelSmall
+                                  style: Theme.of(context).textTheme.labelMedium
                                       ?.copyWith(
                                         color: AppTheme.surfaceContainerLowest,
                                       ),
@@ -478,12 +478,12 @@ class _LandlordDormitoryDetailsScreenState
                   children: [
                     Text(
                       'Availability Status',
-                      style: Theme.of(context).textTheme.titleSmall
+                      style: Theme.of(context).textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     Text(
                       'Manage room availability',
-                      style: Theme.of(context).textTheme.bodySmall
+                      style: Theme.of(context).textTheme.bodyMedium
                           ?.copyWith(color: AppTheme.onSurfaceVariant),
                     ),
                   ],
@@ -525,7 +525,7 @@ class _LandlordDormitoryDetailsScreenState
                     isAvailable
                         ? 'Available (${_dormitory.availableSlots} Slots Vacant)'
                         : 'Full (0 Slots Vacant)',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: isAvailable
                           ? AppTheme.onSecondaryContainer
                           : AppTheme.onSurfaceVariant,
@@ -552,7 +552,7 @@ class _LandlordDormitoryDetailsScreenState
             ),
             child: Text(
               'Full dormitories remain visible to seekers and show as full.',
-              style: Theme.of(context).textTheme.bodySmall
+              style: Theme.of(context).textTheme.bodyMedium
                   ?.copyWith(color: AppTheme.onSurfaceVariant),
             ),
           ),
@@ -586,7 +586,7 @@ class _LandlordDormitoryDetailsScreenState
                   _dormitory.address.isEmpty
                       ? 'Address not provided'
                       : _dormitory.address,
-                  style: Theme.of(context).textTheme.bodyMedium
+                  style: Theme.of(context).textTheme.bodyLarge
                       ?.copyWith(color: AppTheme.onSurfaceVariant),
                 ),
               ),
@@ -653,7 +653,7 @@ class _LandlordDormitoryDetailsScreenState
             description.isEmpty
                 ? 'No property description provided.'
                 : description,
-            style: Theme.of(context).textTheme.bodyMedium
+            style: Theme.of(context).textTheme.bodyLarge
                 ?.copyWith(color: AppTheme.onSurfaceVariant, height: 1.5),
           ),
         ],
