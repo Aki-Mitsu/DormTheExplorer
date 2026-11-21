@@ -168,7 +168,7 @@ We may update this Privacy Policy from time to time. We will change the "Last up
 
 For questions, data requests, or account deletion:
 
-Dorm the Explorer Team Email: \aljohn.aguila23@gmail.com] Address: Batangas City, Philippines
+Dorm the Explorer Team Email: aljohn.aguila23@gmail.com Address: Batangas City, Philippines
 
 # Part 3: Short Texts for the App Screens
 
