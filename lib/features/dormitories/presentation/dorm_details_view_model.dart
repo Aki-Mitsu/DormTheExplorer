@@ -96,7 +96,7 @@ class DormDetailsViewModel extends ChangeNotifier {
       authorSubtitle: 'Student seeker',
       rating: rating,
       comment: comment,
-      stayLabel: 'New review',
+      stayLabel: 'Posted',
       createdAt: DateTime.now(),
     );
     await reviewRepository.addReview(review);
