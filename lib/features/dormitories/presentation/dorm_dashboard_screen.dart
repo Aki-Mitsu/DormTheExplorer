@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app_notice.dart';
+import '../../../core/formatters.dart';
 import '../../../theme/app_theme.dart';
 import '../data/dormitory_repository.dart';
 import '../domain/dormitory.dart';
@@ -730,7 +731,7 @@ class _LandlordListingCardState extends State<_LandlordListingCard> {
                                 TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: _formatPrice(
+                                      text: formatPeso(
                                         dormitory.monthlyPrice,
                                       ),
                                       style: Theme.of(context)
@@ -1174,7 +1175,7 @@ class _DormitoryCard extends StatelessWidget {
                               style: Theme.of(context).textTheme.titleSmall,
                               children: [
                                 TextSpan(
-                                  text: _formatPrice(dormitory.monthlyPrice),
+                                  text: formatPeso(dormitory.monthlyPrice),
                                   style: const TextStyle(
                                     color: AppTheme.primaryContainer,
                                     fontWeight: FontWeight.w800,
@@ -1455,13 +1456,4 @@ class _DashboardNavigationBarShell extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatPrice(num price) {
-  final roundedPrice = price.round().toString();
-  final groupedPrice = roundedPrice.replaceAllMapped(
-    RegExp(r'\B(?=(\d{3})+(?!\d))'),
-    (_) => ',',
-  );
-  return '₱$groupedPrice';
 }

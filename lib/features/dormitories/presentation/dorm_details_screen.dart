@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app_notice.dart';
+import '../../../core/formatters.dart';
 import '../../../theme/app_theme.dart';
 import '../data/dorm_listing_report_repository.dart';
 import '../data/dorm_review_repository.dart';
@@ -198,7 +199,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
                       dormitory: widget.dormitory,
                       dormName: _dormName,
                       monthlyRentLabel: widget.dormitory.monthlyPrice > 0
-                          ? '${_formatPrice(widget.dormitory.monthlyPrice)} / month'
+                          ? '${formatPeso(widget.dormitory.monthlyPrice)} / month'
                           : 'Price not provided',
                     ),
                     DormRoomTypesSection(
@@ -224,7 +225,7 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
         dormName: _dormName,
         address: widget.dormitory.address.trim(),
         monthlyRentLabel: widget.dormitory.monthlyPrice > 0
-            ? '${_formatPrice(widget.dormitory.monthlyPrice)} / month'
+            ? '${formatPeso(widget.dormitory.monthlyPrice)} / month'
             : 'Monthly price not provided',
         destination: _destination,
         route: _viewModel.route,
@@ -448,12 +449,4 @@ class _DormDetailsScreenState extends State<DormDetailsScreen> {
   }
 
   void _showMessage(String message) => AppNotice.show(context, message);
-
-  String _formatPrice(num price) {
-    final grouped = price.round().toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (_) => ',',
-    );
-    return '₱$grouped';
-  }
 }

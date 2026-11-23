@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app_notice.dart';
+import '../../../core/formatters.dart';
 import '../../../theme/app_theme.dart';
 import '../data/batangas_city_boundary.dart';
 import '../data/dormitory_repository.dart';
@@ -619,7 +620,7 @@ class _LandlordDormitoryDetailsScreenState
                     width: metricWidth,
                     child: _metricTile(
                       label: 'MONTHLY RENT',
-                      value: _formatPrice(_dormitory.monthlyPrice),
+                      value: formatPeso(_dormitory.monthlyPrice),
                       subtitle: 'per month / slot',
                       color: AppTheme.primaryContainer,
                     ),
@@ -1034,14 +1035,6 @@ class _LandlordDormitoryDetailsScreenState
       'laundry' || 'laundryarea' => 'laundry',
       _ => normalized,
     };
-  }
-
-  String _formatPrice(num price) {
-    final grouped = price.round().toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (_) => ',',
-    );
-    return '₱$grouped';
   }
 
   void _showMessage(String message) => AppNotice.show(context, message);
