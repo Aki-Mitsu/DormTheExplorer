@@ -12,6 +12,9 @@ import 'dorm_details_screen.dart';
 import 'landlord_dormitory_details_screen.dart';
 import 'search_filters_screen.dart';
 import 'profile_dashboard_screen.dart';
+import 'widgets/dashboard/dashboard_header.dart';
+import 'widgets/dashboard/dashboard_navigation_bars.dart';
+import 'widgets/dashboard/dormitory_card.dart';
 
 class DormDashboardScreen extends StatefulWidget {
   const DormDashboardScreen({
@@ -192,7 +195,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         child: Column(
           children: [
             if (_selectedDestination != 2)
-              _DashboardHeader(
+              DashboardHeader(
                 isLandlord: _isLandlord && _selectedDestination == 1,
               ),
             Expanded(
@@ -226,11 +229,11 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         ),
       ),
       bottomNavigationBar: _isLandlord
-          ? _LandlordNavigationBar(
+          ? LandlordNavigationBar(
               selectedIndex: _selectedDestination,
               onSelected: _selectDestination,
             )
-          : _SeekerNavigationBar(
+          : SeekerNavigationBar(
               selectedIndex: _selectedDestination,
               onSelected: _selectDestination,
             ),
@@ -453,7 +456,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
     }
 
     if (_viewModel.error != null) {
-      return _DashboardMessage(
+      return DashboardMessage(
         icon: Icons.cloud_off_outlined,
         title: 'Could not load dormitories',
         message: 'Check your connection and Firestore access, then try again.',
@@ -467,7 +470,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         return const SizedBox.shrink();
       }
 
-      return _DashboardMessage(
+      return DashboardMessage(
         icon: isLandlord ? Icons.apartment_outlined : Icons.search_off_rounded,
         title: isLandlord
             ? 'No dormitories added yet'
@@ -518,7 +521,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
       ),
       itemBuilder: (context, index) {
         final dormitory = dormitories[index];
-        return _DormitoryCard(
+        return DormitoryCard(
           dormitory: dormitory,
           isLandlord: false,
           showFavorite: !_isLandlord,
@@ -648,7 +651,7 @@ class _LandlordListingCardState extends State<_LandlordListingCard> {
                     Positioned(
                       left: 12,
                       top: 12,
-                      child: _LandlordStatusChip(
+                      child: LandlordStatusChip(
                         icon: Icons.school_outlined,
                         label: dormitory.proximityLabel!,
                         foreground: AppTheme.primaryContainer,
@@ -657,7 +660,7 @@ class _LandlordListingCardState extends State<_LandlordListingCard> {
                   Positioned(
                     top: 12,
                     right: 12,
-                    child: _LandlordStatusChip(
+                    child: LandlordStatusChip(
                       icon: !isAvailable ? Icons.cancel_outlined : Icons.circle,
                       label: status,
                       foreground: !isAvailable
@@ -881,576 +884,6 @@ class _LandlordListingCardState extends State<_LandlordListingCard> {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LandlordStatusChip extends StatelessWidget {
-  const _LandlordStatusChip({
-    required this.icon,
-    required this.label,
-    required this.foreground,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 190),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppTheme.surface.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(999),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.onSurface.withValues(alpha: 0.08),
-            blurRadius: 6,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 15, color: foreground),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall
-                  ?.copyWith(color: foreground, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader({required this.isLandlord});
-
-  final bool isLandlord;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.96),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.onSurface.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: AppTheme.primaryContainer,
-              shape: BoxShape.circle,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Transform.translate(
-              offset: const Offset(0, 3.5),
-              child: Transform.scale(
-                scale: 1.2,
-                child: Image.asset(
-                  'assets/images/Dorm_the_Explorer_Logo.png',
-                  width: 36,
-                  height: 36,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.apartment_rounded,
-                    color: AppTheme.onPrimary,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'DormTheExplorer',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppTheme.primaryContainer,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              if (isLandlord)
-                Text(
-                  'LANDLORD PORTAL',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.onSurfaceVariant,
-                    letterSpacing: 1,
-                  ),
-                ),
-            ],
-          ),
-          const Spacer(),
-          if (isLandlord)
-            Text(
-              'My Listings',
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DormitoryCard extends StatelessWidget {
-  const _DormitoryCard({
-    required this.dormitory,
-    required this.isLandlord,
-    required this.showFavorite,
-    required this.isFavorite,
-    required this.onFavorite,
-    required this.onTap,
-  });
-
-  final Dormitory dormitory;
-  final bool isLandlord;
-  final bool showFavorite;
-  final bool isFavorite;
-  final VoidCallback onFavorite;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final coverUrl = dormitory.photoUrls.isEmpty
-        ? null
-        : dormitory.photoUrls.first;
-
-    return Material(
-      color: AppTheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(20),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Stack(
-              children: [
-                SizedBox(
-                  height: 128,
-                  width: double.infinity,
-                  child: coverUrl == null
-                      ? const _DormitoryPhotoPlaceholder()
-                      : Image.network(
-                          coverUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const _DormitoryPhotoPlaceholder(),
-                        ),
-                ),
-                if (showFavorite)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Material(
-                      color: AppTheme.surfaceContainerLowest.withValues(
-                        alpha: 0.92,
-                      ),
-                      shape: const CircleBorder(),
-                      child: IconButton(
-                        onPressed: onFavorite,
-                        tooltip: isFavorite
-                            ? 'Remove from favorites'
-                            : 'Add to favorites',
-                        visualDensity: VisualDensity.compact,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 34,
-                          height: 34,
-                        ),
-                        icon: Icon(
-                          isFavorite
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          size: 18,
-                          color: isFavorite
-                              ? AppTheme.primaryContainer
-                              : AppTheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ),
-                Positioned(
-                  left: 8,
-                  bottom: 8,
-                  child: _DormitoryBadge(
-                    text: isLandlord
-                        ? dormitory.status.toUpperCase()
-                        : dormitory.availableSlots <= 0
-                        ? 'FULL'
-                        : '${dormitory.availableSlots} ${dormitory.availableSlots == 1 ? 'slot' : 'slots'} available',
-                    color: isLandlord
-                        ? _statusColor(dormitory.status)
-                        : dormitory.availableSlots <= 0
-                        ? AppTheme.error
-                        : dormitory.availableSlots == 1
-                        ? AppTheme.tertiaryContainer
-                        : AppTheme.secondary,
-                  ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (dormitory.proximityLabel?.isNotEmpty ?? false)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.near_me_rounded,
-                            color: AppTheme.primaryContainer,
-                            size: 13,
-                          ),
-                          const SizedBox(width: 3),
-                          Expanded(
-                            child: Text(
-                              dormitory.proximityLabel!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
-                                    color: AppTheme.primaryContainer,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    Text(
-                      dormitory.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.onSurface,
-                      ),
-                    ),
-                    Text(
-                      dormitory.address,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 11,
-                        color: AppTheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Divider(height: 10, thickness: 0.7),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: RichText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            text: TextSpan(
-                              style: Theme.of(context).textTheme.titleSmall,
-                              children: [
-                                TextSpan(
-                                  text: formatPeso(dormitory.monthlyPrice),
-                                  style: const TextStyle(
-                                    color: AppTheme.primaryContainer,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: '/mo',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: AppTheme.onSurfaceVariant,
-                                        fontSize: 10,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              dormitory.averageRating == null
-                                  ? Icons.star_outline_rounded
-                                  : Icons.star_rounded,
-                              color: dormitory.averageRating == null
-                                  ? AppTheme.onSurfaceVariant
-                                  : AppTheme.tertiaryContainer,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              dormitory.averageRating?.toStringAsFixed(1) ??
-                                  'New',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
-                                    color: dormitory.averageRating == null
-                                        ? AppTheme.onSurfaceVariant
-                                        : AppTheme.tertiaryContainer,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Color _statusColor(String status) => switch (status.toLowerCase()) {
-    'approved' || 'active' => AppTheme.secondary,
-    'rejected' => AppTheme.error,
-    _ => AppTheme.tertiaryContainer,
-  };
-}
-
-class _DormitoryPhotoPlaceholder extends StatelessWidget {
-  const _DormitoryPhotoPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppTheme.surfaceContainer,
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.apartment_rounded,
-        size: 38,
-        color: AppTheme.outline.withValues(alpha: 0.72),
-      ),
-    );
-  }
-}
-
-class _DormitoryBadge extends StatelessWidget {
-  const _DormitoryBadge({required this.text, required this.color});
-
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            text,
-            style: Theme.of(context).textTheme.labelSmall
-                ?.copyWith(color: color, fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DashboardMessage extends StatelessWidget {
-  const _DashboardMessage({
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.actionLabel,
-    this.onAction,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppTheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 38, color: AppTheme.primaryContainer),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: AppTheme.onSurfaceVariant),
-          ),
-          if (actionLabel != null && onAction != null) ...[
-            const SizedBox(height: 16),
-            OutlinedButton(onPressed: onAction, child: Text(actionLabel!)),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _SeekerNavigationBar extends StatelessWidget {
-  const _SeekerNavigationBar({
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return _DashboardNavigationBarShell(
-      selectedIndex: selectedIndex,
-      onSelected: onSelected,
-      destinations: const [
-        (Icons.home_outlined, 'Home'),
-        (Icons.favorite_border_rounded, 'Favorites'),
-        (Icons.person_outline_rounded, 'Profile'),
-      ],
-    );
-  }
-}
-
-class _LandlordNavigationBar extends StatelessWidget {
-  const _LandlordNavigationBar({
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return _DashboardNavigationBarShell(
-      selectedIndex: selectedIndex,
-      onSelected: onSelected,
-      destinations: const [
-        (Icons.home_outlined, 'Home'),
-        (Icons.apartment_outlined, 'My Listings'),
-        (Icons.person_outline_rounded, 'Profile'),
-      ],
-    );
-  }
-}
-
-class _DashboardNavigationBarShell extends StatelessWidget {
-  const _DashboardNavigationBarShell({
-    required this.selectedIndex,
-    required this.onSelected,
-    required this.destinations,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-  final List<(IconData, String)> destinations;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: 64,
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.97),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.onSurface.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            for (var index = 0; index < destinations.length; index++)
-              Expanded(
-                child: InkWell(
-                  onTap: () => onSelected(index),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        destinations[index].$1,
-                        size: 23,
-                        color: selectedIndex == index
-                            ? AppTheme.primaryContainer
-                            : AppTheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        destinations[index].$2,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: selectedIndex == index
-                              ? AppTheme.primaryContainer
-                              : AppTheme.onSurfaceVariant,
-                          fontWeight: selectedIndex == index
-                              ? FontWeight.w700
-                              : FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       ),

@@ -5,14 +5,15 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../app_notice.dart';
-import '../../../core/formatters.dart';
 import '../../../theme/app_theme.dart';
 import '../data/batangas_city_boundary.dart';
 import '../data/dormitory_repository.dart';
-import '../domain/amenity_utils.dart';
 import '../domain/dormitory.dart';
 import 'add_dormitory_screen.dart';
 import 'widgets/dormitory_photo_viewer.dart';
+import 'widgets/landlord_details/landlord_detail_cards.dart';
+import 'widgets/landlord_details/landlord_location_card.dart';
+import 'widgets/landlord_details/landlord_photo_gallery.dart';
 
 class LandlordDormitoryDetailsScreen extends StatefulWidget {
   const LandlordDormitoryDetailsScreen({
@@ -232,17 +233,40 @@ class _LandlordDormitoryDetailsScreenState
                     isAvailable: isAvailable,
                   ),
                   const SizedBox(height: 12),
-                  _photoGallery(),
+                  LandlordPhotoGallery(
+                    photoUrls: _dormitory.photoUrls,
+                    photoController: _photoController,
+                    selectedPhoto: _selectedPhoto,
+                    onPageChanged: (index) =>
+                        setState(() => _selectedPhoto = index),
+                    onOpenPhotoViewer: _openPhotoViewer,
+                  ),
                   const SizedBox(height: 12),
-                  _availabilityCard(isAvailable),
+                  LandlordAvailabilityCard(
+                    isAvailable: isAvailable,
+                    isUpdating: _isUpdating,
+                    availableSlots: _dormitory.availableSlots,
+                    onToggleAvailability: _toggleAvailability,
+                    onChooseAvailableSlots: _chooseAvailableSlots,
+                  ),
                   const SizedBox(height: 12),
-                  _overviewCard(),
+                  LandlordOverviewCard(dormitory: _dormitory),
                   const SizedBox(height: 12),
-                  _descriptionCard(),
+                  LandlordDescriptionCard(description: _dormitory.description),
                   const SizedBox(height: 12),
-                  _amenitiesCard(),
+                  LandlordAmenitiesCard(
+                    amenities: _dormitory.amenities,
+                    amenityOptions: _amenityOptions,
+                  ),
                   const SizedBox(height: 12),
-                  _locationCard(),
+                  LandlordLocationCard(
+                    latitude: _dormitory.latitude,
+                    longitude: _dormitory.longitude,
+                    address: _dormitory.address,
+                    mapController: _locationMapController,
+                    onPositionChanged: _onLocationMapPositionChanged,
+                    onMapReady: _onLocationMapReady,
+                  ),
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     onPressed: _openEditForm,
@@ -334,696 +358,37 @@ class _LandlordDormitoryDetailsScreenState
     initialIndex: _selectedPhoto,
   );
 
-  Widget _photoGallery() {
-    final photos = _dormitory.photoUrls;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.onSurface.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: photos.isEmpty ? null : _openPhotoViewer,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: AspectRatio(
-                aspectRatio: 16 / 10,
-                child: photos.isEmpty
-                    ? Container(
-                        color: AppTheme.surfaceContainer,
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.apartment_rounded,
-                          size: 48,
-                          color: AppTheme.outline,
-                        ),
-                      )
-                    : Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          PageView.builder(
-                            controller: _photoController,
-                            physics: const PageScrollPhysics(),
-                            itemCount: photos.length,
-                            onPageChanged: (index) =>
-                                setState(() => _selectedPhoto = index),
-                            itemBuilder: (context, index) => Image.network(
-                              photos[index],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    color: AppTheme.surfaceContainer,
-                                    alignment: Alignment.center,
-                                    child: const Icon(
-                                      Icons.broken_image_outlined,
-                                      size: 38,
-                                      color: AppTheme.outline,
-                                    ),
-                                  ),
-                            ),
-                          ),
-                          Positioned(
-                            right: 10,
-                            bottom: 10,
-                            child: IgnorePointer(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.inverseSurface.withValues(
-                                    alpha: 0.82,
-                                  ),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  '${_selectedPhoto + 1} / ${photos.length} Photos',
-                                  style: Theme.of(context).textTheme.labelMedium
-                                      ?.copyWith(
-                                        color: AppTheme.surfaceContainerLowest,
-                                      ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-          ),
-          if (photos.length > 1) ...[
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 72,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: photos.length,
-                separatorBuilder: (_, index) => const SizedBox(width: 8),
-                itemBuilder: (context, index) => InkWell(
-                  onTap: () {
-                    _photoController.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOut,
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    width: 96,
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: _selectedPhoto == index
-                            ? AppTheme.primaryContainer
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(7),
-                      child: Image.network(
-                        photos[index],
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: AppTheme.surfaceContainer,
-                          alignment: Alignment.center,
-                          child: const Icon(Icons.broken_image_outlined),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+  void _onLocationMapPositionChanged(MapCamera camera, bool hasGesture) {
+    if (_isReturningLocationMap) return;
+    if (BatangasCityBoundary.contains(camera.center)) {
+      _lastValidLocationMapCenter = camera.center;
+      _lastValidLocationMapZoom = camera.zoom;
+      return;
+    }
+    if (!hasGesture) return;
+    _isReturningLocationMap = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _locationMapController.move(
+        _lastValidLocationMapCenter,
+        _lastValidLocationMapZoom,
+      );
+      _isReturningLocationMap = false;
+    });
   }
 
-  Widget _availabilityCard(bool isAvailable) {
-    return _sectionCard(
-      child: Column(
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 19,
-                backgroundColor: AppTheme.primaryFixed,
-                child: const Icon(
-                  Icons.toggle_on_rounded,
-                  color: AppTheme.primaryContainer,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Availability Status',
-                      style: Theme.of(context).textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    Text(
-                      'Manage room availability',
-                      style: Theme.of(context).textTheme.bodyMedium
-                          ?.copyWith(color: AppTheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              if (_isUpdating)
-                const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              else
-                Switch(
-                  value: isAvailable,
-                  onChanged: _toggleAvailability,
-                  activeThumbColor: AppTheme.surfaceContainerLowest,
-                  activeTrackColor: AppTheme.secondary,
-                  inactiveThumbColor: AppTheme.surfaceContainerLowest,
-                  inactiveTrackColor: AppTheme.surfaceContainerHighest,
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isAvailable
-                        ? AppTheme.secondaryContainer.withValues(alpha: 0.4)
-                        : AppTheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    isAvailable
-                        ? 'Available (${_dormitory.availableSlots} Slots Vacant)'
-                        : 'Full (0 Slots Vacant)',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: isAvailable
-                          ? AppTheme.onSecondaryContainer
-                          : AppTheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              TextButton.icon(
-                onPressed: _isUpdating ? null : _chooseAvailableSlots,
-                icon: const Icon(Icons.edit_outlined, size: 16),
-                label: const Text('Set slots'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              'Full dormitories remain visible to seekers and show as full.',
-              style: Theme.of(context).textTheme.bodyMedium
-                  ?.copyWith(color: AppTheme.onSurfaceVariant),
-            ),
-          ),
-        ],
-      ),
-    );
+  void _onLocationMapReady(double latitude, double longitude) {
+    final camera = _locationMapController.camera;
+    if (BatangasCityBoundary.contains(camera.center)) {
+      _lastValidLocationMapCenter = camera.center;
+      _lastValidLocationMapZoom = camera.zoom;
+    } else {
+      _locationMapController.move(
+        LatLng(latitude, longitude),
+        camera.zoom,
+      );
+    }
   }
-
-  Widget _overviewCard() {
-    final roomTypes = DormRoomType.currentLabels(_dormitory.roomTypes);
-
-    return _sectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            _dormitory.name,
-            style: Theme.of(context).textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.3),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.location_on_rounded,
-                size: 18,
-                color: AppTheme.primaryContainer,
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  _dormitory.address.isEmpty
-                      ? 'Address not provided'
-                      : _dormitory.address,
-                  style: Theme.of(context).textTheme.bodyLarge
-                      ?.copyWith(color: AppTheme.onSurfaceVariant),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final metricWidth = (constraints.maxWidth - 10) / 2;
-              return Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  SizedBox(
-                    width: metricWidth,
-                    child: _metricTile(
-                      label: 'MONTHLY RENT',
-                      value: formatPeso(_dormitory.monthlyPrice),
-                      subtitle: 'per month / slot',
-                      color: AppTheme.primaryContainer,
-                    ),
-                  ),
-                  SizedBox(
-                    width: metricWidth,
-                    child: _metricTile(
-                      label: 'CAPACITY SLOTS',
-                      value: '${_dormitory.availableSlots} Available',
-                      subtitle: '${_dormitory.totalSlots} total occupancy',
-                      color: _dormitory.availableSlots > 0
-                          ? AppTheme.secondary
-                          : AppTheme.error,
-                    ),
-                  ),
-                  if (roomTypes.isNotEmpty)
-                    SizedBox(
-                      width: constraints.maxWidth,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(11),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.bed_outlined,
-                              size: 18,
-                              color: AppTheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'ROOM TYPE',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
-                                    color: AppTheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.6,
-                                  ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                roomTypes.join(' • '),
-                                textAlign: TextAlign.end,
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _descriptionCard() {
-    final description = _dormitory.description.trim();
-    return _sectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _sectionTitle(Icons.description_outlined, 'About the Property'),
-          const SizedBox(height: 8),
-          Text(
-            description.isEmpty
-                ? 'No property description provided.'
-                : description,
-            style: Theme.of(context).textTheme.bodyLarge
-                ?.copyWith(color: AppTheme.onSurfaceVariant, height: 1.5),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _amenitiesCard() {
-    final selected = _dormitory.amenities.map(canonicalAmenity).toSet();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Amenities Overview',
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 10),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _amenityOptions.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisExtent: 62,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemBuilder: (context, index) {
-            final (key, label, icon) = _amenityOptions[index];
-            return _amenityTile(
-              label: label,
-              icon: icon,
-              available: selected.contains(key),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _locationCard() {
-    final latitude = _dormitory.latitude;
-    final longitude = _dormitory.longitude;
-
-    return _sectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _sectionTitle(Icons.pin_drop_outlined, 'Property Location Pin'),
-          const SizedBox(height: 10),
-          if (latitude == null || longitude == null)
-            Container(
-              height: 160,
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.location_off_outlined,
-                      color: AppTheme.outline,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'No map coordinates are saved for this listing.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall
-                          ?.copyWith(color: AppTheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                height: 180,
-                child: FlutterMap(
-                  mapController: _locationMapController,
-                  options: MapOptions(
-                    initialCenter: LatLng(latitude, longitude),
-                    initialZoom: 15,
-                    cameraConstraint: CameraConstraint.contain(
-                      bounds: BatangasCityBoundary.mapBounds,
-                    ),
-                    onPositionChanged: (camera, hasGesture) {
-                      if (_isReturningLocationMap) return;
-                      if (BatangasCityBoundary.contains(camera.center)) {
-                        _lastValidLocationMapCenter = camera.center;
-                        _lastValidLocationMapZoom = camera.zoom;
-                        return;
-                      }
-                      if (!hasGesture) return;
-                      _isReturningLocationMap = true;
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (!mounted) return;
-                        _locationMapController.move(
-                          _lastValidLocationMapCenter,
-                          _lastValidLocationMapZoom,
-                        );
-                        _isReturningLocationMap = false;
-                      });
-                    },
-                    onMapReady: () {
-                      final camera = _locationMapController.camera;
-                      if (BatangasCityBoundary.contains(camera.center)) {
-                        _lastValidLocationMapCenter = camera.center;
-                        _lastValidLocationMapZoom = camera.zoom;
-                      } else {
-                        _locationMapController.move(
-                          LatLng(latitude, longitude),
-                          camera.zoom,
-                        );
-                      }
-                    },
-                    interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.all,
-                    ),
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName:
-                          'dormtheexplorer.app.dorm_the_explorer',
-                      maxNativeZoom: 19,
-                    ),
-                    PolygonLayer(
-                      polygons: [
-                        Polygon(
-                          points: BatangasCityBoundary.mapBoundsRing,
-                          holePointsList: BatangasCityBoundary.polygons,
-                          color: AppTheme.onSurface.withValues(alpha: 0.28),
-                          borderStrokeWidth: 0,
-                          disableHolesBorder: true,
-                        ),
-                        for (final boundary in BatangasCityBoundary.polygons)
-                          Polygon(
-                            points: boundary,
-                            color: const Color(0x00000000),
-                            borderColor: AppTheme.primaryContainer,
-                            borderStrokeWidth: 2,
-                          ),
-                      ],
-                    ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: LatLng(latitude, longitude),
-                          width: 44,
-                          height: 48,
-                          child: const Icon(
-                            Icons.location_on_rounded,
-                            size: 44,
-                            color: AppTheme.primaryContainer,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          if (_dormitory.address.trim().isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.location_on_outlined,
-                    color: AppTheme.primaryContainer,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 7),
-                  Expanded(
-                    child: Text(
-                      _dormitory.address,
-                      style: Theme.of(context).textTheme.bodySmall
-                          ?.copyWith(color: AppTheme.onSurfaceVariant),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionCard({required Widget child}) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppTheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(14),
-      boxShadow: [
-        BoxShadow(
-          color: AppTheme.onSurface.withValues(alpha: 0.04),
-          blurRadius: 12,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    child: child,
-  );
-
-  Widget _sectionTitle(IconData icon, String title) => Row(
-    children: [
-      Icon(icon, size: 19, color: AppTheme.primaryContainer),
-      const SizedBox(width: 8),
-      Expanded(
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.titleSmall
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ),
-    ],
-  );
-
-  Widget _metricTile({
-    required String label,
-    required String value,
-    required String subtitle,
-    required Color color,
-    IconData? icon,
-  }) => Container(
-    constraints: const BoxConstraints(minHeight: 80),
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: AppTheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(11),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppTheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
-                ),
-              ),
-            ),
-            if (icon != null)
-              Icon(icon, size: 16, color: AppTheme.onSurfaceVariant),
-          ],
-        ),
-        const SizedBox(height: 5),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleSmall
-              ?.copyWith(color: color, fontWeight: FontWeight.w700),
-        ),
-        if (subtitle.isNotEmpty) ...[
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: AppTheme.onSurfaceVariant),
-          ),
-        ],
-      ],
-    ),
-  );
-
-  Widget _amenityTile({
-    required String label,
-    required IconData icon,
-    required bool available,
-  }) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
-    decoration: BoxDecoration(
-      color: AppTheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          icon,
-          size: 19,
-          color: available ? AppTheme.secondary : AppTheme.outline,
-        ),
-        const SizedBox(width: 7),
-        Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: available
-                  ? AppTheme.onSurface
-                  : AppTheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-        Icon(
-          available
-              ? Icons.check_circle_rounded
-              : Icons.remove_circle_outline_rounded,
-          size: 17,
-          color: available ? AppTheme.secondary : AppTheme.outline,
-        ),
-      ],
-    ),
-  );
 
   void _showMessage(String message) => AppNotice.show(context, message);
 }
