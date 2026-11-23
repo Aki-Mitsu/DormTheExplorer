@@ -540,7 +540,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                   ),
                 ),
               ),
-              if (trailing != null) trailing,
+               ?trailing,
             ],
           ),
           const SizedBox(height: 16),
