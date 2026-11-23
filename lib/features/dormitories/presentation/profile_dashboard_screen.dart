@@ -10,6 +10,7 @@ import '../../../services/auth_service.dart';
 import '../../../app_notice.dart';
 import '../../../theme/app_theme.dart';
 import '../data/cloudinary_upload_service.dart';
+import '../data/user_profile_repository.dart';
 
 class ProfileDashboardScreen extends StatelessWidget {
   const ProfileDashboardScreen({
@@ -24,10 +25,7 @@ class ProfileDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .snapshots(),
+      stream: UserProfileRepository().watchUserProfile(userId),
       builder: (context, snapshot) {
         final data = snapshot.data?.data() ?? const <String, dynamic>{};
         final user = FirebaseAuth.instance.currentUser;
@@ -569,6 +567,7 @@ class _ProfilePicture extends StatefulWidget {
 class _ProfilePictureState extends State<_ProfilePicture> {
   final ImagePicker _imagePicker = ImagePicker();
   final CloudinaryUploadService _uploadService = CloudinaryUploadService();
+  final UserProfileRepository _profileRepository = UserProfileRepository();
   String? _photoUrl;
   bool _isUploading = false;
 
@@ -604,36 +603,11 @@ class _ProfilePictureState extends State<_ProfilePicture> {
     }
   }
 
-  Future<String?> _syncLandlordPhoto(String photoUrl) async {
-    if (FirebaseAuth.instance.currentUser?.uid != widget.userId) {
-      return 'No matching signed-in account.';
-    }
-
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('dormitories')
-          .where('landlordId', isEqualTo: widget.userId)
-          .get();
-      final documents = snapshot.docs
-          .where((document) => document.data()['landlordPhotoUrl'] != photoUrl)
-          .toList(growable: false);
-
-      for (var start = 0; start < documents.length; start += 450) {
-        final batch = FirebaseFirestore.instance.batch();
-        for (final document in documents.skip(start).take(450)) {
-          batch.update(document.reference, {
-            'landlordPhotoUrl': photoUrl,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-        }
-        await batch.commit();
-      }
-      return null;
-    } catch (error) {
-      return error is FirebaseException
-          ? error.message ?? error.code
-          : error.toString();
-    }
+  Future<String?> _syncLandlordPhoto(String photoUrl) {
+    return _profileRepository.syncLandlordPhoto(
+      userId: widget.userId,
+      photoUrl: photoUrl,
+    );
   }
 
   Future<void> _uploadPhoto() async {

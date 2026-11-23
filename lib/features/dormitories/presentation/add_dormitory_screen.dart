@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -11,6 +10,7 @@ import '../../../theme/app_theme.dart';
 import '../data/cloudinary_upload_service.dart';
 import '../data/dorm_location_service.dart';
 import '../data/dormitory_repository.dart';
+import '../data/user_profile_repository.dart';
 import '../domain/dormitory.dart';
 import 'widgets/add_dormitory/add_dormitory_bottom_actions.dart';
 import 'widgets/add_dormitory/amenities_description_sections.dart';
@@ -63,6 +63,7 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   final _imagePicker = ImagePicker();
   final _uploadService = CloudinaryUploadService();
   final _repository = DormitoryRepository();
+  final _userProfileRepository = UserProfileRepository();
   final _locationService = DormLocationService();
   final Set<String> _amenities = {};
   final List<String> _photoUrls = [];
@@ -229,11 +230,9 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
 
     setState(() => _isSaving = true);
     try {
-      final profile = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.userId)
-          .get();
-      final profileData = profile.data() ?? const <String, dynamic>{};
+      final profileData = await _userProfileRepository.fetchUserProfile(
+        widget.userId,
+      );
       final landlordName =
           (profileData['fullName'] as String?)?.trim().isNotEmpty == true
           ? (profileData['fullName'] as String).trim()
