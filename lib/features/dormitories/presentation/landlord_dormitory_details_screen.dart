@@ -9,6 +9,7 @@ import '../../../core/formatters.dart';
 import '../../../theme/app_theme.dart';
 import '../data/batangas_city_boundary.dart';
 import '../data/dormitory_repository.dart';
+import '../domain/amenity_utils.dart';
 import '../domain/dormitory.dart';
 import 'add_dormitory_screen.dart';
 import 'widgets/dormitory_photo_viewer.dart';
@@ -709,7 +710,7 @@ class _LandlordDormitoryDetailsScreenState
   }
 
   Widget _amenitiesCard() {
-    final selected = _dormitory.amenities.map(_canonicalAmenity).toSet();
+    final selected = _dormitory.amenities.map(canonicalAmenity).toSet();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1023,19 +1024,6 @@ class _LandlordDormitoryDetailsScreenState
       ],
     ),
   );
-
-  String _canonicalAmenity(String value) {
-    final normalized = value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
-    return switch (normalized) {
-      'wifi' || 'wififiber' => 'wifi',
-      'owncr' || 'bathroom' => 'own_cr',
-      'kitchen' || 'kitchenarea' => 'kitchen',
-      'parking' || 'vehicleparking' => 'parking',
-      'aircon' || 'airconditioning' => 'aircon',
-      'laundry' || 'laundryarea' => 'laundry',
-      _ => normalized,
-    };
-  }
 
   void _showMessage(String message) => AppNotice.show(context, message);
 }
