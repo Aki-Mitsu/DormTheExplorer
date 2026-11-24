@@ -1,8 +1,16 @@
-# Dorm the Explorer
-
-![Dorm the Explorer logo](assets/images/Dorm_the_Explorer_Logo.png)
-
-**Dorm the Explorer** helps students discover dormitories in Batangas City and gives landlords tools to publish and manage listings.
+<div align="center">
+  <br>
+  <img src="assets/images/DormTheExplorer_Logo.png" alt="Dorm the Explorer logo" width="180" />
+  <h1>Dorm the Explorer</h1>
+  <h4>A Flutter app that helps students find dormitories in Batangas City and helps landlords manage their listings.</h4>
+  <p>
+    <a href="#what-the-app-does">Features</a> •
+    <a href="#technology">Technology</a> •
+    <a href="#get-started">Getting Started</a> •
+    <a href="#how-the-app-is-organized">Architecture</a> •
+    <a href="#run-tests">Tests</a>
+  </p>
+</div>
 
 ## Contents
 
