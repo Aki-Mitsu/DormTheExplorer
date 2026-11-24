@@ -71,7 +71,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
     if (index == 0) {
       _viewModel.showAllDormitories();
     } else if (index == 1) {
-      _viewModel.toggleFavoritesOnly();
+      _viewModel.setFavoritesOnly(true);
     }
   }
 

@@ -113,16 +113,13 @@ class DormDashboardViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleFavoritesOnly() {
-    _showFavoritesOnly = !_showFavoritesOnly;
+  void setFavoritesOnly(bool show) {
+    if (_showFavoritesOnly == show) return;
+    _showFavoritesOnly = show;
     notifyListeners();
   }
 
-  void showAllDormitories() {
-    if (!_showFavoritesOnly) return;
-    _showFavoritesOnly = false;
-    notifyListeners();
-  }
+  void showAllDormitories() => setFavoritesOnly(false);
 
   void showLandlordListings(bool show) {
     if (!isLandlord || _showLandlordListings == show) return;
