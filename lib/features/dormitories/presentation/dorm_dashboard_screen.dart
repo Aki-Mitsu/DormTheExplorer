@@ -194,10 +194,7 @@ class _DormDashboardScreenState extends State<DormDashboardScreen> {
         bottom: false,
         child: Column(
           children: [
-            if (_selectedDestination != 2)
-              DashboardHeader(
-                isLandlord: _isLandlord && _selectedDestination == 1,
-              ),
+            if (_selectedDestination != 2) const DashboardHeader(),
             Expanded(
               child: _selectedDestination == 2
                   ? ProfileDashboardScreen(

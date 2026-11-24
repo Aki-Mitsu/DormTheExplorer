@@ -3,9 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../../theme/app_theme.dart';
 
 class DashboardHeader extends StatelessWidget {
-  const DashboardHeader({super.key, required this.isLandlord});
-
-  final bool isLandlord;
+  const DashboardHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -63,23 +61,8 @@ class DashboardHeader extends StatelessWidget {
                   letterSpacing: 0.5,
                 ),
               ),
-              if (isLandlord)
-                Text(
-                  'LANDLORD PORTAL',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.onSurfaceVariant,
-                    letterSpacing: 1,
-                  ),
-                ),
             ],
           ),
-          const Spacer(),
-          if (isLandlord)
-            Text(
-              'My Listings',
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
         ],
       ),
     );
