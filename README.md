@@ -2,93 +2,106 @@
   <br>
   <img src="assets/images/DormTheExplorer_Logo.png" alt="Dorm the Explorer logo" width="180" />
   <h1>Dorm the Explorer</h1>
-  <h4>A Flutter app that helps students find dormitories in Batangas City and helps landlords manage their listings.</h4>
+  <p><strong>Find a dorm in Batangas City. Manage your listings. All in one app.</strong></p>
+
   <p>
-    <a href="#what-the-app-does">Features</a> •
-    <a href="#technology">Technology</a> •
-    <a href="#get-started">Getting Started</a> •
-    <a href="#how-the-app-is-organized">Architecture</a> •
-    <a href="#run-tests">Tests</a>
+    <img alt="Flutter" src="https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=white" />
+    <img alt="Dart" src="https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white" />
+    <img alt="Firebase" src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black" />
+    <img alt="Cloudinary" src="https://img.shields.io/badge/Cloudinary-3448C5?logo=cloudinary&logoColor=white" />
+  </p>
+
+  <p>
+    <a href="#features">Features</a> •
+    <a href="#tech-stack">Tech Stack</a> •
+    <a href="#quick-start">Quick Start</a> •
+    <a href="#project-structure">Structure</a> •
+    <a href="#testing">Testing</a> •
+    <a href="#troubleshooting">Troubleshooting</a>
   </p>
 </div>
 
+---
+
+Dorm the Explorer is a Flutter app with role-based accounts. **Students** search, filter, and compare dormitories on a map. **Landlords** publish and manage their own listings. Every account must verify its email before entering the app.
+
 ## Contents
 
-- [What the app does](#what-the-app-does)
-- [Technology](#technology)
-- [How the app is organized](#how-the-app-is-organized)
-- [Requirements](#requirements)
-- [Get started](#get-started)
-- [Configure Firebase](#configure-firebase)
-- [Configure Cloudinary](#configure-cloudinary)
-- [Run the app](#run-the-app)
-- [Firestore rules](#firestore-rules)
-- [Run tests](#run-tests)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [Setup](#setup)
+  - [Requirements](#requirements)
+  - [Install dependencies](#install-dependencies)
+  - [Configure Firebase](#configure-firebase)
+  - [Configure Cloudinary](#configure-cloudinary)
+  - [Deploy Firestore rules](#deploy-firestore-rules)
+- [Run the App](#run-the-app)
+- [Testing](#testing)
+- [Project Structure](#project-structure)
 - [Troubleshooting](#troubleshooting)
-- [Security notes](#security-notes)
+- [Security Notes](#security-notes)
 
-## What the app does
+## Features
 
-Dorm the Explorer has role-based accounts for students and landlords. Email verification is required before an account can enter the app.
+### For students
 
-### Students
-
-- Browse approved dormitory listings and view rent, photos, room types, amenities, availability, location, and landlord contact details.
-- Search by name or address and filter by price, available slots, room type, amenities, and campus.
-- View map locations and route information.
+- Browse approved listings with rent, photos, room types, amenities, availability, location, and landlord contact details.
+- Search by name or address.
+- Filter by price, available slots, room type, amenities, and campus.
+- View dorm locations on a map and get route information.
 - Review a dormitory or report a listing.
 
-### Landlords
+### For landlords
 
 - Create, edit, and manage dormitory listings.
 - Upload listing photos and a profile photo.
 - Set monthly rent, room capacity, and available slots.
-- Manage listing availability from the landlord dashboard.
+- Update availability from the landlord dashboard.
 
-Listing forms enforce a maximum monthly rent of **₱99,999** and a maximum capacity of **99 slots**. Firestore rules also validate these limits when listings are created or those values are updated.
+### Listing limits
 
-## Technology
+| Field | Maximum |
+| --- | --- |
+| Monthly rent | ₱99,999 |
+| Capacity | 99 slots |
+
+The listing forms enforce these limits, and the Firestore rules validate them again whenever a listing is created or either value is updated.
+
+## Tech Stack
 
 | Area | Technology |
 | --- | --- |
 | App | Flutter, Dart |
-| Authentication | Firebase Authentication |
+| Authentication | Firebase Authentication (Email/Password) |
 | Database and access control | Cloud Firestore and Firestore Security Rules |
-| Image hosting | Cloudinary unsigned image uploads |
+| Image hosting | Cloudinary unsigned uploads |
 | Maps and location | `flutter_map`, `latlong2`, `geolocator` |
 | Route information | OSRM |
 
-## How the app is organized
+## Quick Start
 
-The app is organized by feature. Dormitory data access is kept in repositories and services, domain models hold listing and search data, and presentation screens handle the user interface.
+If you already have Flutter, a Firebase project, and a Cloudinary preset ready:
 
-```text
-lib/
-├── config/                 # Public client configuration, including Cloudinary
-├── features/
-│   ├── auth/presentation/  # Sign-in, account creation, email verification UI
-│   └── dormitories/
-│       ├── data/           # Firestore repositories, uploads, location, routing
-│       ├── domain/         # Dormitory, review, route, and search models
-│       └── presentation/  # Dashboards, listing forms, details, and filters
-├── services/               # Shared authentication services
-├── theme/                  # App theme
-├── firebase_options.dart   # Firebase platform configuration
-└── main.dart               # App entry point and authentication gate
+```bash
+git clone https://github.com/shirokase/Dorm-the-Explorer.git
+cd Dorm-the-Explorer
+flutter pub get
+flutter run
 ```
 
-The Firebase project configuration is described by `firebase.json`; Firestore rules live in `firestore.rules`.
+New to the project? Follow the full [Setup](#setup) first.
 
-## Requirements
+## Setup
+
+### Requirements
 
 - Flutter SDK with Dart **3.14.0 or later**
-- A Firebase project with Email/Password Authentication and Cloud Firestore enabled
-- A Cloudinary account with an unsigned image upload preset
-- Android Studio or another Flutter-compatible IDE, plus an Android emulator or device for Android development
+- A Firebase project with **Email/Password Authentication** and **Cloud Firestore** enabled
+- A Cloudinary account with an **unsigned image upload preset**
+- Android Studio (or another Flutter-compatible IDE) and an Android emulator or device
 
-## Get started
-
-Clone the repository and install its dependencies:
+### Install dependencies
 
 ```bash
 git clone https://github.com/shirokase/Dorm-the-Explorer.git
@@ -96,32 +109,35 @@ cd Dorm-the-Explorer
 flutter pub get
 ```
 
-Then configure Firebase and Cloudinary before running the app.
+### Configure Firebase
 
-## Configure Firebase
+The app initializes Firebase from `lib/firebase_options.dart`. Android also reads `android/app/google-services.json`.
 
-The app initializes Firebase using `lib/firebase_options.dart`. Android also uses `android/app/google-services.json`.
-
-For a different Firebase project, install and run the [FlutterFire CLI](https://firebase.google.com/docs/flutter/setup):
+To point the app at your own Firebase project, use the [FlutterFire CLI](https://firebase.google.com/docs/flutter/setup):
 
 ```bash
 dart pub global activate flutterfire_cli
 flutterfire configure --project <firebase-project-id>
 ```
 
-In the Firebase Console:
+Then, in the Firebase Console:
 
-1. Enable **Email/Password** in Authentication providers.
+1. Enable **Email/Password** under Authentication providers.
 2. Create a Cloud Firestore database.
-3. Deploy the repository's Firestore rules as described in [Firestore rules](#firestore-rules).
+3. [Deploy the Firestore rules](#deploy-firestore-rules).
 
-Keep the generated platform configuration aligned with the Firebase project you intend to use.
+> [!TIP]
+> Make sure the generated configuration files all belong to the same Firebase project you plan to use. Project settings are described in `firebase.json`.
 
-## Configure Cloudinary
+### Configure Cloudinary
 
-The app uploads dormitory and profile images directly to Cloudinary using an unsigned upload preset. Create an image upload preset in Cloudinary, allow only the image formats you need, and configure upload restrictions in Cloudinary itself.
+Dormitory and profile images are uploaded straight to Cloudinary with an unsigned upload preset.
 
-The app has default Cloudinary values in `lib/config/cloudinary_config.dart`. You can override them at runtime:
+1. In Cloudinary, create an **unsigned** image upload preset.
+2. Allow only the image formats you need and set size limits on the preset itself.
+3. Provide your values at runtime (defaults live in `lib/config/cloudinary_config.dart`):
+
+**macOS / Linux**
 
 ```bash
 flutter run \
@@ -129,50 +145,81 @@ flutter run \
   --dart-define=CLOUDINARY_UPLOAD_PRESET=<unsigned-preset>
 ```
 
-Unsigned upload settings are visible to app users. **Never place a Cloudinary API secret in the Flutter application.** Use a trusted backend if you need signed uploads.
+**Windows (PowerShell)**
 
-## Run the app
+```powershell
+flutter run `
+  --dart-define=CLOUDINARY_CLOUD_NAME=<cloud-name> `
+  --dart-define=CLOUDINARY_UPLOAD_PRESET=<unsigned-preset>
+```
 
-Start the app on the default connected device or emulator:
+> [!WARNING]
+> Unsigned upload settings are visible to anyone who uses the app. **Never put a Cloudinary API secret in the Flutter app.** If you need signed uploads, use a trusted backend.
+
+### Deploy Firestore rules
+
+Rules live in [`firestore.rules`](firestore.rules). Deploy them with the Firebase CLI:
+
+```bash
+npx -y firebase-tools@latest deploy --only firestore:rules --project <firebase-project-id>
+```
+
+Double-check the target project before deploying. The rules require an authenticated landlord who owns the listing for any listing write, and they validate supported fields plus the rent and capacity limits.
+
+## Run the App
+
+Run on the default connected device or emulator:
 
 ```bash
 flutter run
 ```
 
-To choose a device explicitly:
+Or pick a device explicitly:
 
 ```bash
 flutter devices
 flutter run -d <device-id>
 ```
 
-## Firestore rules
-
-Rules are stored in [`firestore.rules`](firestore.rules). Deploy them to your Firebase project with the Firebase CLI:
-
-```bash
-npx -y firebase-tools@latest deploy --only firestore:rules --project <firebase-project-id>
-```
-
-Review the target project before deployment. Listing writes require an authenticated landlord who owns the listing; the rules also validate supported listing fields and rent/capacity limits.
-
-## Run tests
-
-Run the project's test suite with:
+## Testing
 
 ```bash
 flutter test
 ```
 
+## Project Structure
+
+The app is organized by feature. Data access lives in repositories and services, domain models hold listing and search data, and presentation screens handle the UI.
+
+```text
+lib/
+├── config/                 # Public client configuration (e.g., Cloudinary)
+├── features/
+│   ├── auth/
+│   │   └── presentation/   # Sign-in, sign-up, email verification UI
+│   └── dormitories/
+│       ├── data/           # Firestore repositories, uploads, location, routing
+│       ├── domain/         # Dormitory, review, route, and search models
+│       └── presentation/   # Dashboards, listing forms, details, filters
+├── services/               # Shared authentication services
+├── theme/                  # App theme
+├── firebase_options.dart   # Firebase platform configuration
+└── main.dart               # App entry point and authentication gate
+```
+
+Other key files: `firebase.json` (Firebase project config) and `firestore.rules` (Firestore security rules).
+
 ## Troubleshooting
 
-- **Permission denied when creating or editing a listing:** Confirm the signed-in account has the landlord role, owns the listing, and that the current `firestore.rules` have been deployed.
-- **Email verification does not let the account continue:** Open the latest verification link, return to the app, and refresh the verification state.
-- **Cloudinary uploads fail:** Verify the Cloud name and unsigned preset, check that the preset allows the selected format, and ensure the image is within the configured size limit.
-- **Location is unavailable:** Grant the app location permission and enable device location services. Map tiles and route information also require network access.
+| Problem | What to try |
+| --- | --- |
+| **Permission denied** when creating or editing a listing | Confirm the signed-in account has the landlord role and owns the listing, and that the latest `firestore.rules` are deployed. |
+| **Email verification doesn't let me in** | Open the newest verification link, return to the app, and refresh the verification state. |
+| **Cloudinary uploads fail** | Check the cloud name and unsigned preset, confirm the preset allows the file format, and make sure the image is within the size limit. |
+| **Location is unavailable** | Grant location permission and turn on device location services. Map tiles and route info also need a network connection. |
 
-## Security notes
+## Security Notes
 
-- Firestore rules are part of the app's security boundary; deploy and review them for the Firebase project you use.
+- Firestore rules are part of the app's security boundary. Review and deploy them for whichever Firebase project you use.
 - Cloudinary unsigned presets are public client configuration. Restrict the preset and enforce upload limits in Cloudinary.
 - Never commit service-account files, private API secrets, or other credentials.
