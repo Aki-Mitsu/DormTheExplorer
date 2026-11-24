@@ -28,8 +28,29 @@ class DormExplorerApp extends StatelessWidget {
   }
 }
 
-class _AuthGate extends StatelessWidget {
+class _AuthGate extends StatefulWidget {
   const _AuthGate();
+
+  @override
+  State<_AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<_AuthGate> {
+  String? _roleUserId;
+  Future<String?>? _roleFuture;
+
+  Future<String?> _roleFor(String userId) {
+    if (_roleUserId != userId || _roleFuture == null) {
+      _roleUserId = userId;
+      _roleFuture = AuthService().getRole(userId);
+    }
+    return _roleFuture!;
+  }
+
+  void _clearRoleFuture() {
+    _roleUserId = null;
+    _roleFuture = null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +68,18 @@ class _AuthGate extends StatelessWidget {
         }
 
         final user = authSnapshot.data;
-        if (user == null) return const LoginScreen();
+        if (user == null) {
+          _clearRoleFuture();
+          return const LoginScreen();
+        }
         if (user.email != null && !user.emailVerified) {
+          _clearRoleFuture();
           return _EmailVerificationGate(user: user);
         }
 
         return FutureBuilder<String?>(
           key: ValueKey(user.uid),
-          future: AuthService().getRole(user.uid),
+          future: _roleFor(user.uid),
           builder: (context, roleSnapshot) {
             if (roleSnapshot.hasError) {
               return _AuthGateMessage(
