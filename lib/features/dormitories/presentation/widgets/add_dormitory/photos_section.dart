@@ -230,12 +230,13 @@ class AddMoreTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 92,
+      width: 112,
       child: OutlinedButton(
         onPressed: isDisabled ? null : onPickPhotos,
         style: OutlinedButton.styleFrom(
           backgroundColor: AppTheme.surfaceContainerLow,
           side: BorderSide.none,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -247,6 +248,8 @@ class AddMoreTile extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               'Add More',
+              maxLines: 1,
+              softWrap: false,
               style: Theme.of(context).textTheme.labelSmall
                   ?.copyWith(color: AppTheme.primaryContainer),
             ),
