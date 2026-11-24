@@ -87,16 +87,35 @@ class LandlordAvailabilityCard extends StatelessWidget {
                         : AppTheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Text(
-                    isAvailable
-                        ? 'Available ($availableSlots Slots Vacant)'
-                        : 'Full (0 Slots Vacant)',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: isAvailable
-                          ? AppTheme.onSecondaryContainer
-                          : AppTheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isAvailable
+                            ? Icons.check_circle_rounded
+                            : Icons.do_not_disturb_on_outlined,
+                        size: 16,
+                        color: isAvailable
+                            ? AppTheme.onSecondaryContainer
+                            : AppTheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          isAvailable
+                              ? '$availableSlots ${availableSlots == 1 ? 'slot' : 'slots'} available'
+                              : 'No slots available',
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: isAvailable
+                                ? AppTheme.onSecondaryContainer
+                                : AppTheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
