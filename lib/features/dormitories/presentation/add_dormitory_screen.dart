@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
@@ -37,6 +38,8 @@ class AddDormitoryScreen extends StatefulWidget {
 class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
   static const int _maxPhotos = 5;
   static const int _maxDescriptionLength = 500;
+  static const int _maxMonthlyPrice = 99999;
+  static const int _maxSlots = 99;
   static const List<(String, String, IconData)> _amenityOptions = [
     ('wifi', 'Wi-Fi', Icons.wifi_rounded),
     ('own_cr', 'Own CR', Icons.shower_rounded),
@@ -81,7 +84,9 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
 
     _nameController.text = dormitory.name;
     _addressController.text = dormitory.address;
-    _priceController.text = dormitory.monthlyPrice.toString();
+    _priceController.text = _formatIntegerWithCommas(
+      dormitory.monthlyPrice.round().toString(),
+    );
     _totalSlotsController.text = dormitory.totalSlots.toString();
     _availableSlotsController.text = dormitory.availableSlots.toString();
     _descriptionController.text = dormitory.description;
@@ -204,19 +209,20 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
       return;
     }
 
-    final price = num.tryParse(_priceController.text.trim());
-    final totalSlots = int.tryParse(_totalSlotsController.text.trim());
-    final availableSlots = int.tryParse(_availableSlotsController.text.trim());
-    if (price == null || price <= 0) {
-      _showMessage('Enter a monthly price greater than zero.');
+    final price = _parseIntegerInput(_priceController.text);
+    final totalSlots = _parseIntegerInput(_totalSlotsController.text);
+    final availableSlots = _parseIntegerInput(_availableSlotsController.text);
+    if (price == null || price <= 0 || price > _maxMonthlyPrice) {
+      _showMessage('Monthly rental price must be between ₱1 and ₱99,999.');
       return;
     }
-    if (totalSlots == null || totalSlots <= 0) {
-      _showMessage('Enter at least one total slot.');
+    if (totalSlots == null || totalSlots <= 0 || totalSlots > _maxSlots) {
+      _showMessage('Total slots must be between 1 and 99.');
       return;
     }
     if (availableSlots == null ||
         availableSlots < 0 ||
+        availableSlots > _maxSlots ||
         availableSlots > totalSlots) {
       _showMessage('Available slots must be between zero and total slots.');
       return;
@@ -419,16 +425,25 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                         hint: '3,500',
                         icon: Icons.payments_outlined,
                         prefixText: '₱ ',
-                        keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: const [
+                          _IntegerInputFormatter(
+                            maxDigits: 5,
+                            maxValue: _maxMonthlyPrice,
+                            groupThousands: true,
+                          ),
+                        ],
                         validator: (value) {
-                          final parsed = num.tryParse(value?.trim() ?? '');
-                          return parsed == null || parsed <= 0
-                              ? 'Enter a price greater than zero.'
+                          final parsed = _parseIntegerInput(value);
+                          if (parsed == null || parsed <= 0) {
+                            return 'Enter a price greater than zero.';
+                          }
+                          return parsed > _maxMonthlyPrice
+                              ? 'Maximum monthly price is ₱99,999.'
                               : null;
                         },
                         helperText:
-                            'Standard rate per resident per month',
+                            'Standard rate per resident per month · Max ₱99,999',
                       ),
                       const SizedBox(height: 14),
                       Row(
@@ -441,11 +456,19 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                               hint: '16',
                               icon: Icons.bed_outlined,
                               keyboardType: TextInputType.number,
+                              inputFormatters: const [
+                                _IntegerInputFormatter(
+                                  maxDigits: 2,
+                                  maxValue: _maxSlots,
+                                ),
+                              ],
                               validator: (value) {
-                                final parsed =
-                                    int.tryParse(value?.trim() ?? '');
-                                return parsed == null || parsed <= 0
-                                    ? 'Enter at least 1.'
+                                final parsed = _parseIntegerInput(value);
+                                if (parsed == null || parsed <= 0) {
+                                  return 'Enter at least 1.';
+                                }
+                                return parsed > _maxSlots
+                                    ? 'Maximum is 99.'
                                     : null;
                               },
                             ),
@@ -459,14 +482,22 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
                               hint: '4',
                               icon: Icons.check_circle_outline_rounded,
                               keyboardType: TextInputType.number,
+                              inputFormatters: const [
+                                _IntegerInputFormatter(
+                                  maxDigits: 2,
+                                  maxValue: _maxSlots,
+                                ),
+                              ],
                               validator: (value) {
-                                final available =
-                                    int.tryParse(value?.trim() ?? '');
-                                final total = int.tryParse(
-                                  _totalSlotsController.text.trim(),
+                                final available = _parseIntegerInput(value);
+                                final total = _parseIntegerInput(
+                                  _totalSlotsController.text,
                                 );
                                 if (available == null || available < 0) {
                                   return 'Enter 0 or more.';
+                                }
+                                if (available > _maxSlots) {
+                                  return 'Maximum is 99.';
                                 }
                                 if (total == null || available > total) {
                                   return 'Cannot exceed total.';
@@ -559,12 +590,14 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
     String? prefixText,
     String? helperText,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
       key: fieldKey,
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       validator: validator,
       decoration: InputDecoration(
         label: _requiredLabel(label),
@@ -689,6 +722,70 @@ class _AddDormitoryScreenState extends State<AddDormitoryScreen> {
       isEditing: widget.isEditing,
       onCancel: () => Navigator.of(context).maybePop(),
       onSubmit: _submit,
+    );
+  }
+}
+
+int? _parseIntegerInput(String? value) =>
+    int.tryParse(value?.replaceAll(',', '').trim() ?? '');
+
+String _formatIntegerWithCommas(String value) {
+  final digits = value.replaceAll(RegExp(r'\D'), '');
+  return digits.replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => ',',
+  );
+}
+
+class _IntegerInputFormatter extends TextInputFormatter {
+  const _IntegerInputFormatter({
+    required this.maxDigits,
+    required this.maxValue,
+    this.groupThousands = false,
+  });
+
+  final int maxDigits;
+  final int maxValue;
+  final bool groupThousands;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final cursorOffset = newValue.selection.extentOffset
+        .clamp(0, newValue.text.length)
+        .toInt();
+    final digitsBeforeCursor = newValue.text
+        .substring(0, cursorOffset)
+        .replaceAll(RegExp(r'\D'), '')
+        .length;
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final parsed = int.tryParse(digits);
+    if (digits.length > maxDigits || (parsed != null && parsed > maxValue)) {
+      return oldValue;
+    }
+    final formatted = groupThousands
+        ? _formatIntegerWithCommas(digits)
+        : digits;
+
+    var formattedCursorOffset = 0;
+    var countedDigits = 0;
+    final targetDigitCount = digitsBeforeCursor
+        .clamp(0, digits.length)
+        .toInt();
+    while (formattedCursorOffset < formatted.length &&
+        countedDigits < targetDigitCount) {
+      if (formatted.codeUnitAt(formattedCursorOffset) != 44) {
+        countedDigits++;
+      }
+      formattedCursorOffset++;
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formattedCursorOffset),
+      composing: TextRange.empty,
     );
   }
 }

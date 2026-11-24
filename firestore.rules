@@ -62,9 +62,14 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.address is string
         && request.resource.data.monthlyPrice is number
+        && request.resource.data.monthlyPrice > 0
+        && request.resource.data.monthlyPrice <= 99999
         && request.resource.data.totalSlots is int
+        && request.resource.data.totalSlots >= 1
+        && request.resource.data.totalSlots <= 99
         && request.resource.data.availableSlots is int
         && request.resource.data.availableSlots >= 0
+        && request.resource.data.availableSlots <= 99
         && request.resource.data.availableSlots
           <= request.resource.data.totalSlots
         && request.resource.data.status == 'approved'
@@ -84,6 +89,16 @@ service cloud.firestore {
         && request.resource.data.availableSlots >= 0
         && request.resource.data.availableSlots
           <= request.resource.data.totalSlots
+        && (!request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['monthlyPrice'])
+          || (request.resource.data.monthlyPrice is number
+            && request.resource.data.monthlyPrice > 0
+            && request.resource.data.monthlyPrice <= 99999))
+        && (!request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['totalSlots', 'availableSlots'])
+          || (request.resource.data.totalSlots >= 1
+            && request.resource.data.totalSlots <= 99
+            && request.resource.data.availableSlots <= 99))
         && (!('landlordPhotoUrl' in request.resource.data)
           || request.resource.data.landlordPhotoUrl == null
           || (request.resource.data.landlordPhotoUrl is string
